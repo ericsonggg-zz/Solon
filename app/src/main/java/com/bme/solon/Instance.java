@@ -16,8 +16,8 @@ public class Instance {
     public static final String CREATE_TABLE =
             "CREATE TABLE " + TABLE_NAME + "("
                     + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + COLUMN_SEVERITY + " INTEGER,"
-                    + COLUMN_STATUS + " INTEGER,"
+                    + COLUMN_SEVERITY + " INTEGER DEFAULT 1,"
+                    + COLUMN_STATUS + " INTEGER DEFAULT 1,"
                     + COLUMN_TIME + " DATETIME DEFAULT CURRENT_TIMESTAMP"
                     + ")";
 

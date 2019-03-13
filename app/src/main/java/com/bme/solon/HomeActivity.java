@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toolbar;
-import android.annotation.TargetApi
 
 public class HomeActivity extends AppCompatActivity {
     @Override
@@ -16,7 +15,7 @@ public class HomeActivity extends AppCompatActivity {
         Toolbar appToolbar = (Toolbar) findViewById(R.id.app_toolbar);
         // setSupportActionBar(appToolbar);
 
-        DatabaseHelper dbHelp = new DatabaseHelper(this);
-        dbHelp.
+        //DatabaseHelper dbHelp = new DatabaseHelper(this);
+        //dbHelp.
     }
 }

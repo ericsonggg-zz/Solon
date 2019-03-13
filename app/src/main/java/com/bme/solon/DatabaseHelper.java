@@ -64,10 +64,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // prepare note object
         //int id, int severity, int status, String time
         Instance instance = new Instance(
-            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
-            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
-            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)),
-            cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME))
+            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)), 0,0,"0"
+            //cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
+            //cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)),
+            //cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME))
         );
         // close the db connection
         cursor.close();
