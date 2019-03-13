@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Solon</string>
+
+    <string name="toolbar_action_home">Home</string>
+    <string name="toolbar_action_connect">Connections</string>
+    <string name="toolbar_action_analytics">Analytics</string>
 </resources>
