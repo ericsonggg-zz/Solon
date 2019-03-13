@@ -2,6 +2,7 @@ package com.bme.solon;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -45,12 +46,34 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return id;
     }
- /*   public List<Instance> retrieveInstances(int severity) {
+/*  public List<Instance> retrieveInstances(int severity) {
         return []
+}*/
+    public Instance retrieveInstance(long id) {
+         // get readable database as we are not inserting anything
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query(Instance.TABLE_NAME,
+                new String[]{Instance.COLUMN_ID},
+                Instance.COLUMN_ID + "=?",
+                new String[]{String.valueOf(id)}, null, null, null, null);
+
+        if (cursor != null)
+            cursor.moveToFirst();
+
+        // prepare note object
+        //int id, int severity, int status, String time
+        Instance instance = new Instance(
+            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
+            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
+            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)),
+            cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME))
+        );
+        // close the db connection
+        cursor.close();
+        return instance;
     }
-    public Instance retrieveInstance(int severity) {
-        return
-    }
+     /*
     public int markInstanceAsRead(Instance instance) {
         SQLiteDatabase db = this.getWritableDatabase();
 
