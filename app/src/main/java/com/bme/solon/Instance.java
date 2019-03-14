@@ -27,4 +27,13 @@ public class Instance {
         this.status = status;
         this.time = time;
     }
+    public int getSeverity() {
+        return severity;
+    }
+    public int getStatus() {
+        return status;
+    }
+    public String getTime() {
+        return time;
+    }
 }
