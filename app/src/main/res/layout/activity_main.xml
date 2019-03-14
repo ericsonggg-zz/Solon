@@ -27,9 +27,9 @@
             app:layout_constraintTop_toTopOf="parent"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-        <!-- Fragment that "does work" -->
-        <fragment android:name="com.bme.solon.HomeFragment"
-            android:id="@+id/main_fragment"
+        <!-- View that fragments should be placed inside -->
+        <FrameLayout
+            android:id="@+id/main_fragment_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 

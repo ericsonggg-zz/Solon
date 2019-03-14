@@ -2,13 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/action_home"
+            android:id="@+id/menu_home"
             android:title="@string/toolbar_action_home" />
         <item
-            android:id="@+id/action_connect"
+            android:id="@+id/menu_connect"
             android:title="@string/toolbar_action_connect" />
         <item
-            android:id="@+id/action_analytics"
+            android:id="@+id/menu_analytics"
             android:title="@string/toolbar_action_analytics" />
     </group>
 </menu>

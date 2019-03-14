@@ -2,7 +2,9 @@ package com.bme.solon;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
@@ -17,10 +19,15 @@ import android.view.MenuItem;
  */
 public class MainActivity extends AppCompatActivity {
 
-    private DrawerLayout navigationPane;
-
+    private DrawerLayout navigationDrawer; //navigation pane parent view
     private FragmentManager fragmentManager; //the fragment manager
-    private int currentFragment; //current fragment being displayed
+    /*
+        current fragment being displayed
+        0 = HomeFragment
+        1 = ConnectFragment
+        2 = AnalyticsFragment
+     */
+    private int currentFragment;
 
     @Override
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -28,35 +35,76 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //Setup the toolbar and navigation pane
+        //Setup the toolbar and navigation drawer
         Toolbar appToolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(appToolbar);
         ActionBar appBar = getSupportActionBar();
         appBar.setDisplayHomeAsUpEnabled(true);
         appBar.setHomeAsUpIndicator(R.drawable.nav_menu);
 
-        navigationPane = findViewById(R.id.navigation_pane);
-
+        //Setup navigation view and item onClick
+        navigationDrawer = findViewById(R.id.navigation_pane);
+        NavigationView navigationView = findViewById(R.id.main_navigation_view);
+        navigationView.setCheckedItem(R.id.menu_home);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                item.setCheckable(true); //make clicked item selected
+                switch (item.getItemId()) { //replace the fragments if its not currently displayed
+                    case R.id.menu_home:
+                        if (currentFragment != 0) {
+                            replaceFragment(new HomeFragment());
+                            currentFragment = 0;
+                        }
+                        break;
+                    case R.id.menu_connect:
+                        if (currentFragment != 1) {
+                            replaceFragment(new ConnectFragment());
+                            currentFragment = 1;
+                        }
+                        break;
+                    case R.id.menu_analytics:
+                        if (currentFragment != 2) {
+                            replaceFragment(new AnalyticsFragment());
+                            currentFragment = 2;
+                        }
+                        break;
+                }
+                navigationDrawer.closeDrawers();
+                return true;
+            }
+        });
         fragmentManager = getSupportFragmentManager();
+
+        //Add HomeFragment as the initial fragment
+        currentFragment = 0;
+        fragmentManager.beginTransaction().add(R.id.main_fragment_view, new HomeFragment()).commit();
     }
 
+    /**
+     * Listener for ActionBar
+     *
+     * @param item      Selected item
+     * @return          true if successful, false otherwise
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home: //open nav pane
-                navigationPane.openDrawer(GravityCompat.START);
+                navigationDrawer.openDrawer(GravityCompat.START);
                 return true;
-            case R.id.action_home:
-                if (currentFragment != 0)
-
-                break;
-            case R.id.action_connect:
-                break;
-            case R.id.action_analytics:
-                break;
-            default:
-                return false;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Use the fragment manager to replace the fragment in main_fragment_view
+     *
+     * @param fragment      The fragment to replace with
+     * @return              True if successful, false otherwise
+     */
+    private boolean replaceFragment (Fragment fragment) {
+        fragmentManager.beginTransaction().replace(R.id.main_fragment_view, fragment).commit();
+        return true;
     }
 }
