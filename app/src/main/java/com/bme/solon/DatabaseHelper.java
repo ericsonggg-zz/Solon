@@ -53,9 +53,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return id;
     }
-/*  public List<Instance> retrieveInstances(int severity) {
-        return []
-}*/
+
     public Instance retrieveInstance(long id) {
          // get readable database as we are not inserting anything
         SQLiteDatabase db = this.getReadableDatabase();
@@ -68,8 +66,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor != null)
             cursor.moveToFirst();
 
-        // prepare note object
-        //int id, int severity, int status, String time
         Instance instance = new Instance(
             cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
             cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
@@ -107,7 +103,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // close db connection
         db.close();
 
-        // return notes list
         return instances;
     }
 
@@ -157,18 +152,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return instances;
     }
 
-     /*
     public int markInstanceAsRead(Instance instance) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(Instance.COLUMN_NOTE, instance.getNote());
+        values.put(Instance.COLUMN_STATUS, 0);
 
         // updating row
-        return db.update(Note.TABLE_NAME, values, Note.COLUMN_ID + " = ?",
+        return db.update(Instance.TABLE_NAME, values, Instance.COLUMN_ID + " = ?",
                 new String[]{String.valueOf(instance.getId())});
-    }*/
-
+    }
 
     // insert instance (when new instance detected)
     // grabbing Instance (from time period, etc)

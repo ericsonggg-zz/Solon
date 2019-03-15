@@ -27,6 +27,9 @@ public class Instance {
         this.status = status;
         this.time = time;
     }
+    public int getId() {
+        return id;
+    }
     public int getSeverity() {
         return severity;
     }

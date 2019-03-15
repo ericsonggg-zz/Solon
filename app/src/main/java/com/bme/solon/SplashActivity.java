@@ -26,13 +26,16 @@ public class SplashActivity extends AppCompatActivity {
         db = new DatabaseHelper(this);
         long id = db.addInstance(3);
         Instance instanceTest = db.retrieveInstance(id);
-        List<Instance> instances = db.getAllInstances();
-        List<Instance> instancesTime = db.getInstancesByTime("week");
-        Log.d("testing", instanceTest.toString());
-        Log.d("testinggggggggg", Integer.toString(instanceTest.getSeverity()));
-        Log.d("testingggggggggggg", instanceTest.getTime());
-        Log.d("testingggggggggggg", Integer.toString(instances.size()));
-        Log.d("testingggggggggggg", Integer.toString(instancesTime.size()));
+        Log.d("testingggggggggggg", Integer.toString(instanceTest.getStatus()));
+        //List<Instance> instances = db.getAllInstances();
+        db.markInstanceAsRead(instanceTest);
+        Instance instanceTest2 = db.retrieveInstance(id);
+        //List<Instance> instancesTime = db.getInstancesByTime("week");
+//        Log.d("testing", instanceTest.toString());
+//        Log.d("testinggggggggg", Integer.toString(instanceTest.getSeverity()));
+//        Log.d("testingggggggggggg", instanceTest.getTime());
+//        Log.d("testingggggggggggg", Integer.toString(instances.size()));
+        Log.d("testingggggggggggg", Integer.toString(instanceTest2.getStatus()));
 
 
 
