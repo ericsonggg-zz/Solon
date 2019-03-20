@@ -1,6 +1,5 @@
 package com.bme.solon;
 
-import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
@@ -8,10 +7,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import org.xml.sax.DTDHandler;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.bme.solon.database.DatabaseHelper;
+import com.bme.solon.database.Instance;
 
 public class SplashActivity extends AppCompatActivity {
     private DatabaseHelper db;

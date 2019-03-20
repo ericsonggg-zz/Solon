@@ -1,4 +1,4 @@
-package com.bme.solon;
+package com.bme.solon.database;
 
 public class Instance {
     public static final String TABLE_NAME = "Instance";

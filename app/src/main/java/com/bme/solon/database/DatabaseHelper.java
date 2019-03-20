@@ -1,4 +1,4 @@
-package com.bme.solon;
+package com.bme.solon.database;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -167,6 +167,5 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // grabbing Instance (from time period, etc)
     // grabbing instance (by id, time, etc)
     // mark instance as read
-
 
 }
