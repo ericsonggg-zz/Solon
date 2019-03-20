@@ -1,4 +1,4 @@
-package com.bme.solon;
+package com.bme.solon.database;
 
 public class Instance {
     public static final String TABLE_NAME = "Instance";
@@ -16,8 +16,8 @@ public class Instance {
     public static final String CREATE_TABLE =
             "CREATE TABLE " + TABLE_NAME + "("
                     + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + COLUMN_SEVERITY + " INTEGER,"
-                    + COLUMN_STATUS + " INTEGER,"
+                    + COLUMN_SEVERITY + " INTEGER DEFAULT 1,"
+                    + COLUMN_STATUS + " INTEGER DEFAULT 1,"
                     + COLUMN_TIME + " DATETIME DEFAULT CURRENT_TIMESTAMP"
                     + ")";
 
@@ -26,5 +26,17 @@ public class Instance {
         this.severity = severity;
         this.status = status;
         this.time = time;
+    }
+    public int getId() {
+        return id;
+    }
+    public int getSeverity() {
+        return severity;
+    }
+    public int getStatus() {
+        return status;
+    }
+    public String getTime() {
+        return time;
     }
 }
