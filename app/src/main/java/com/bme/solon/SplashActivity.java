@@ -33,9 +33,9 @@ public class SplashActivity extends AppCompatActivity {
 
     /**
      * Check whether user enabled Bluetooth if previously turned off.
-     * @param requestCode
-     * @param resultCode
-     * @param data
+     * @param requestCode       Intent request code
+     * @param resultCode        Result code of the intent
+     * @param data              Extras
      */
     @Override
     protected void onActivityResult(int requestCode,
