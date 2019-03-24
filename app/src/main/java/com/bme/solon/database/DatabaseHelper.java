@@ -17,15 +17,45 @@ import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
+    private static DatabaseHelper singleton;        //singleton
+    private SQLiteDatabase readDb;
+    //TODO: make writeable DB a class variable
+
     // Database Version
     private static final int DATABASE_VERSION = 1;
 
     // Database Name
     private static final String DATABASE_NAME = "Instance_db";
 
-
-    public DatabaseHelper(Context context) {
+    /**
+     * Private constructor
+     * @param context   Caller context
+     */
+    private DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        readDb = getReadableDatabase();
+    }
+
+    /**
+     * Get the singleton instance of this DatabaseHelper. If none exists, create one.
+     * @param context   Caller context
+     * @return          The singleton instance
+     */
+    public DatabaseHelper getInstance(Context context) {
+        if (singleton == null) {
+            singleton = new DatabaseHelper(context.getApplicationContext());
+        }
+        return singleton;
+    }
+
+    public void killInstance() {
+        if (readDb != null) {
+            readDb.close();
+            readDb = null;
+        }
+        //TODO: close class variable writeable DB
+        singleton.close();
+        singleton = null;
     }
 
     // Creating Tables
@@ -41,6 +71,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older table if existed
         db.execSQL("DROP TABLE IF EXISTS " + Instance.TABLE_NAME);
+        //TODO: migrate tables, not drop
 
         // Create tables again
         onCreate(db);
@@ -56,7 +87,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Instance retrieveInstance(long id) {
          // get readable database as we are not inserting anything
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = readDb;
 
         Cursor cursor = db.query(Instance.TABLE_NAME,
                 new String[]{Instance.COLUMN_ID, Instance.COLUMN_SEVERITY, Instance.COLUMN_STATUS, Instance.COLUMN_TIME},
@@ -72,7 +103,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)),
             cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME))
         );
-        // close the db connection
+        // close the cursor
         cursor.close();
         return instance;
     }
