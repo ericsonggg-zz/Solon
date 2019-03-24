@@ -3,8 +3,10 @@ package com.bme.solon.bluetooth;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.util.Log;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Set;
 import java.util.UUID;
 
@@ -12,19 +14,23 @@ public class BluetoothManager {
     public static final int REQUEST_ENABLE_BT = 10000; //Const for enable bluetooth intent
     public static final UUID DEVICE_UUID = UUID.randomUUID(); //Const for device's Bluetooth UUID. Must match the hardware.
 
+    private static final String TAG = "BluetoothManager";
+
     private static BluetoothManager singleton;
     private BluetoothAdapter bluetoothAdapter;
+    private BluetoothSocket deviceSocket;
 
     public BluetoothManager() throws BluetoothException {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (bluetoothAdapter == null) {
+            Log.e(TAG, "constructor: Device does not support Bluetooth");
             throw new BluetoothException("Device does not support Bluetooth");
         }
     }
 
     /**
-     * Get the adapter object
+     * Get the adapter objec
      * @return  A BluetoothAdapter
      */
     public BluetoothAdapter getAdapter() {
@@ -48,6 +54,7 @@ public class BluetoothManager {
                 }
             }
         }
+        Log.d(TAG, "queryPaired: " + deviceName + " was not found in paired list");
         return null;
     }
 
@@ -69,10 +76,50 @@ public class BluetoothManager {
         return bluetoothAdapter.cancelDiscovery();
     }
 
+    /**
+     * Return an ASyncTask that attempts to connect to the {@link BluetoothDevice}
+     * on execute().
+     * @param device        The device to connect to
+     * @return              An ASyncTask for starting a connection
+     * @throws IOException  If a {@link BluetoothSocket} could not be created from the device.
+     */
     public AsyncConnect connectToDevice(BluetoothDevice device) throws IOException {
         stopDiscovery();
-        BluetoothSocket socket = device.createRfcommSocketToServiceRecord(DEVICE_UUID);
-        return new AsyncConnect(socket);
+        deviceSocket = device.createRfcommSocketToServiceRecord(DEVICE_UUID);
+        return new AsyncConnect(deviceSocket);
+    }
+
+    /**
+     * Get the input stream from the connected device to read bytes from.
+     * @return              The InputStream of the connected device.
+     * @throws IOException  If the InputStream could not be created.
+     */
+    public InputStream getInputStream() throws IOException {
+        if (deviceSocket != null) {
+            return deviceSocket.getInputStream();
+        }
+        else {
+            Log.d(TAG, "getInputStream: socket is null");
+            return null;
+        }
+    }
+
+    /**
+     * Cancel the Bluetooth connection if it exists.
+     * @return      True if the connection was successfully disconnected or if there was no existing connection.
+     */
+    public boolean cancelConnection() {
+        if (deviceSocket != null) {
+            try {
+                deviceSocket.close();
+                deviceSocket = null;
+            }
+            catch (IOException e) {
+                Log.e(TAG, "cancelConnection failed: " + e.toString());
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
