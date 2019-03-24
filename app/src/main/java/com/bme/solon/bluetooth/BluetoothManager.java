@@ -83,10 +83,10 @@ public class BluetoothManager {
      * @return              An ASyncTask for starting a connection
      * @throws IOException  If a {@link BluetoothSocket} could not be created from the device.
      */
-    public AsyncConnect connectToDevice(BluetoothDevice device) throws IOException {
+    public ConnectAsync connectToDevice(BluetoothDevice device) throws IOException {
         stopDiscovery();
         deviceSocket = device.createRfcommSocketToServiceRecord(DEVICE_UUID);
-        return new AsyncConnect(deviceSocket);
+        return new ConnectAsync(deviceSocket);
     }
 
     /**

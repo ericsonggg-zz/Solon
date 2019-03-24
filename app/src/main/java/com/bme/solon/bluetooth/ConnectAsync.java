@@ -10,7 +10,7 @@ import java.io.IOException;
  * AsyncTask that tries to connect to the specified device in the socket.
  * Updates dialog on completion.
  */
-public class AsyncConnect extends AsyncTask<AlertDialog, Void, Boolean> {
+public class ConnectAsync extends AsyncTask<AlertDialog, Void, Boolean> {
     private BluetoothSocket socket;
     private AlertDialog dialog;
 
@@ -18,7 +18,7 @@ public class AsyncConnect extends AsyncTask<AlertDialog, Void, Boolean> {
      * Class constructor
      * @param socket        Socket to try to connect to
      */
-    public AsyncConnect(BluetoothSocket socket) {
+    public ConnectAsync(BluetoothSocket socket) {
         this.socket = socket;
     }
 
