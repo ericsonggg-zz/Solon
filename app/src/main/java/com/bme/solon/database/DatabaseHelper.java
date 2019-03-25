@@ -13,7 +13,9 @@ import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -41,21 +43,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * @param context   Caller context
      * @return          The singleton instance
      */
-    public DatabaseHelper getInstance(Context context) {
+    public static DatabaseHelper getInstance(Context context) {
         if (singleton == null) {
             singleton = new DatabaseHelper(context.getApplicationContext());
         }
         return singleton;
     }
 
-    public void killInstance() {
-        if (readDb != null) {
-            readDb.close();
-            readDb = null;
+    /**
+     * Close the singleton database and all its open connections.
+     */
+    public static void killInstance() {
+        if (singleton != null) {
+            singleton.close();
+            singleton = null;
         }
-        //TODO: close class variable writeable DB
-        singleton.close();
-        singleton = null;
     }
 
     // Creating Tables
@@ -64,6 +66,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // create notes table
         db.execSQL(Instance.CREATE_TABLE);
+        db.execSQL(Device.CREATE_TABLE);
     }
 
     // Upgrading database
@@ -71,11 +74,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older table if existed
         db.execSQL("DROP TABLE IF EXISTS " + Instance.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + Device.TABLE_NAME);
         //TODO: migrate tables, not drop
 
         // Create tables again
         onCreate(db);
     }
+
     public long addInstance(int severity) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -199,4 +204,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // grabbing instance (by id, time, etc)
     // mark instance as read
 
+    /**
+     * Query database for the "active" device details.
+     * @return      Map with device credentials if an active device exists.
+     *              Otherwise an empty map.
+     */
+    public Map<String, String> getActiveDevice() {
+        Map<String, String> device = new HashMap<>();
+
+        Cursor cursor = readDb.query(Device.TABLE_NAME,
+                new String[]{Device.COLUMN_ID, Device.COLUMN_NAME, Device.COLUMN_ADDRESS, Device.COLUMN_ACTIVE},
+                Device.COLUMN_ACTIVE + "=1",
+                null, null, null, null, null);
+
+        if (cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            device.put(Device.COLUMN_NAME, cursor.getString(cursor.getColumnIndex(Device.COLUMN_NAME)));
+            device.put(Device.COLUMN_ADDRESS, cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)));
+        }
+        return device;
+    }
 }

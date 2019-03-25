@@ -20,17 +20,21 @@ public class BluetoothManager {
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothSocket deviceSocket;
 
-    public BluetoothManager() throws BluetoothException {
+    /**
+     * Private constructor
+     * @throws BluetoothUnsupportedException    If the phone does not support Bluetooth
+     */
+    private BluetoothManager() throws BluetoothUnsupportedException {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (bluetoothAdapter == null) {
             Log.e(TAG, "constructor: Device does not support Bluetooth");
-            throw new BluetoothException("Device does not support Bluetooth");
+            throw new BluetoothUnsupportedException("Device does not support Bluetooth");
         }
     }
 
     /**
-     * Get the adapter objec
+     * Get the adapter object
      * @return  A BluetoothAdapter
      */
     public BluetoothAdapter getAdapter() {
@@ -125,18 +129,12 @@ public class BluetoothManager {
     /**
      * Get the singleton instance of this bluetooth manager. If none exists, create one.
      * @return                      BluetoothManager singleton
-     * @throws BluetoothException   If device doesn't support Bluetooth
+     * @throws BluetoothUnsupportedException   If device doesn't support Bluetooth
      */
-    public static synchronized BluetoothManager getInstance() throws BluetoothException {
+    public static synchronized BluetoothManager getInstance() throws BluetoothUnsupportedException {
         if (singleton == null) {
             singleton = new BluetoothManager();
         }
         return singleton;
-    }
-
-    public class BluetoothException extends Exception {
-        public BluetoothException(String message) {
-            super(message);
-        }
     }
 }
