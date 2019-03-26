@@ -8,10 +8,11 @@
     android:fitsSystemWindows="true">
 
     <!-- Layout to contain contents of main body of screen (drawer will slide over this) -->
-    <FrameLayout
-        android:id="@+id/main_content_frame"
+    <LinearLayout
+        android:id="@+id/main_content_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <!-- Toolbar to contain navigation -->
         <android.support.v7.widget.Toolbar
@@ -33,7 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-    </FrameLayout>
+    </LinearLayout>
 
     <!-- Container for contents of drawer - use NavigationView to make configuration easier -->
     <android.support.design.widget.NavigationView

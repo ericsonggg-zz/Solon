@@ -24,4 +24,12 @@ public class ConnectFragment extends Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_connect, container, false);
     }
+
+    public void toggleBluetooth(View view) {
+
+    }
+
+    public void discoverBluetooth(View view) {
+
+    }
 }
