@@ -2,7 +2,6 @@ package com.bme.solon.bluetooth;
 
 import android.bluetooth.BluetoothSocket;
 import android.os.AsyncTask;
-import android.support.v7.app.AlertDialog;
 import android.widget.TextView;
 
 import com.bme.solon.R;

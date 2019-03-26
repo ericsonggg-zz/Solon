@@ -6,6 +6,9 @@ import android.os.AsyncTask;
 
 import java.util.List;
 
+/**
+ * Async that changes screens to the MainActivity once all listed Asyncs are complete.
+ */
 public class ChangeActivityAsync extends AsyncTask<Void, Void, Void> {
     private List<AsyncTask> tasks;
     private Context context;

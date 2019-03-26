@@ -5,21 +5,17 @@ import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bme.solon.bluetooth.BluetoothManager;
 import com.bme.solon.bluetooth.BluetoothUnsupportedException;
 import com.bme.solon.bluetooth.ConnectAsync;
 import com.bme.solon.database.DatabaseHelper;
-
-import com.bme.solon.bluetooth.BluetoothManager;
 import com.bme.solon.database.Device;
 
 import java.io.IOException;
@@ -27,6 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Initial loading screen. Performs all necessary startup tasks.
+ */
 public class SplashActivity extends AppCompatActivity {
     private static final String TAG = "SplashActivity";
 
@@ -37,7 +36,9 @@ public class SplashActivity extends AppCompatActivity {
     private boolean doBluetoothTask;
 
     /**
-     * Turns on bluetooth if currently off.
+     * Initializes singleton variables.
+     * If Bluetooth is unsupported, notifies user and quits app.
+     * If Bluetooth is off, prompts user to turn it on.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +96,9 @@ public class SplashActivity extends AppCompatActivity {
        startupTasks();
     }
 
+    /**
+     * Runs all startup tasks.
+     */
     private void startupTasks() {
         if (doBluetoothTask) {
             bluetoothTask();
@@ -107,6 +111,10 @@ public class SplashActivity extends AppCompatActivity {
         Log.d(TAG,"done");
     }
 
+    /**
+     * Run startup Bluetooth task.
+     * Try to connect to "active" device, if exists.
+     */
     private void bluetoothTask() {
         Map<String, String> activeDevice = db.getActiveDevice();
         if (!activeDevice.isEmpty()) {
