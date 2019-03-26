@@ -1,9 +1,11 @@
 package com.bme.solon.bluetooth;
 
 /**
- * Exception class if Bluetooth is unsupported by the phone.
+ * Unchecked exception class if Bluetooth is unsupported by the phone.
+ * Unchecked because only the first caller ({@link com.bme.solon.SplashActivity}) should always
+ * crash the app.
  */
-public class BluetoothUnsupportedException extends Exception {
+public class BluetoothUnsupportedException extends RuntimeException {
 
     /**
      * Default constructor

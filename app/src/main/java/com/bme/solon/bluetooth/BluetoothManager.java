@@ -128,7 +128,7 @@ public class BluetoothManager {
 
     /**
      * Get the singleton instance of this bluetooth manager. If none exists, create one.
-     * @return                      BluetoothManager singleton
+     * @return      BluetoothManager singleton
      * @throws BluetoothUnsupportedException   If device doesn't support Bluetooth
      */
     public static synchronized BluetoothManager getInstance() throws BluetoothUnsupportedException {
