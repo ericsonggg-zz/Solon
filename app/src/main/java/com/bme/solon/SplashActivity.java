@@ -120,11 +120,10 @@ public class SplashActivity extends AppCompatActivity {
         if (!activeDevice.isEmpty()) {
             BluetoothDevice device = btManager.queryPaired(activeDevice.get(Device.COLUMN_NAME), activeDevice.get(Device.COLUMN_ADDRESS));
 
-            TextView progressText = findViewById(R.id.splash_progress_text);
             try {
                 ConnectAsync connectTask = btManager.connectToDevice(device);
                 tasks.add(connectTask);
-                connectTask.execute(progressText);
+                connectTask.execute(this);
             }
             catch (IOException e) {
                 Log.e(TAG,"onActivityResult: error connecting to device: " + e.toString());
