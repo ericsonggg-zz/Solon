@@ -1,15 +1,17 @@
 package com.bme.solon;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bme.solon.bluetooth.BluetoothManager;
@@ -27,6 +29,7 @@ import java.util.Map;
  * Initial loading screen. Performs all necessary startup tasks.
  */
 public class SplashActivity extends AppCompatActivity {
+    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     private static final String TAG = "SplashActivity";
 
     private DatabaseHelper db;
@@ -34,6 +37,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private List<AsyncTask> tasks = new ArrayList<>();
     private boolean doBluetoothTask;
+    private GetPermissionsAsync permissionTask;
 
     /**
      * Initializes singleton variables.
@@ -97,18 +101,43 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     /**
-     * Runs all startup tasks.
+     * From https://developer.radiusnetworks.com/2015/09/29/is-your-beacon-app-ready-for-android-6.html
      */
-    private void startupTasks() {
-        if (doBluetoothTask) {
-            bluetoothTask();
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[],
+                                           int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_COARSE_LOCATION: {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "Coarse location permission granted");
+                } else {
+                    Toast.makeText(this, R.string.splash_permission_disabled_toast, Toast.LENGTH_SHORT).show();
+                }
+                permissionTask.cancel(true);
+                break;
+            }
         }
+    }
 
-        //TODO: add all remaining AsyncTasks
+    private void getPermissionsTask() {
+        //Manually get permissions for Version M or higher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //Android M Permission check 
+            if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                //Info Dialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.splash_permission_info_title)
+                        .setMessage(R.string.splash_permission_info_message)
+                        .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
+                            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+                        })
+                        .create().show();
 
-        ChangeActivityAsync finalTask = new ChangeActivityAsync(this, tasks);
-        finalTask.execute();
-        Log.d(TAG,"done");
+                permissionTask = new GetPermissionsAsync();
+                tasks.add(permissionTask);
+            }
+        }
     }
 
     /**
@@ -129,5 +158,21 @@ public class SplashActivity extends AppCompatActivity {
                 Log.e(TAG,"onActivityResult: error connecting to device: " + e.toString());
             }
         }
+    }
+
+    /**
+     * Runs all startup tasks.
+     */
+    private void startupTasks() {
+        if (doBluetoothTask) {
+            bluetoothTask();
+        }
+
+        //TODO: add all remaining AsyncTasks
+        getPermissionsTask();
+
+        ChangeActivityAsync finalTask = new ChangeActivityAsync(this, tasks);
+        finalTask.execute();
+        Log.d(TAG,"done");
     }
 }

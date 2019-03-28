@@ -55,9 +55,9 @@ public class ConnectAsync extends AsyncTask<Context, Void, Boolean> {
     protected void onPostExecute(Boolean connectStatus) {
         if (context != null && context.get() != null) {
             if (connectStatus) {
-                Toast.makeText(context.get(), R.string.splash_progress_connect_successful, Toast.LENGTH_LONG).show();
+                Toast.makeText(context.get(), R.string.splash_progress_connect_successful, Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(context.get(), R.string.splash_progress_connect_unsuccessful, Toast.LENGTH_LONG).show();
+                Toast.makeText(context.get(), R.string.splash_progress_connect_unsuccessful, Toast.LENGTH_SHORT).show();
             }
         }
     }
