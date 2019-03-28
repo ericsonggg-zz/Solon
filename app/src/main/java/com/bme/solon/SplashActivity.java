@@ -89,7 +89,7 @@ public class SplashActivity extends AppCompatActivity {
                                     Intent data) {
         if (requestCode == BluetoothManager.REQUEST_ENABLE_BT) {
             if (resultCode != RESULT_OK) {
-                Toast.makeText(this, R.string.splash_bluetooth_disabled_toast, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.splash_bluetooth_disabled_toast, Toast.LENGTH_SHORT).show();
                 doBluetoothTask = false;
             }
         }
