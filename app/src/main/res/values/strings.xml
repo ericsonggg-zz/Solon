@@ -7,16 +7,24 @@
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
 
+    <string name="bluno">Bluno</string>
+
+    <string name="bluetooth_is_off">Bluetooth must be on for this function</string>
+
     <string name="toolbar_action_home">Home</string>
     <string name="toolbar_action_connect">Connections</string>
     <string name="toolbar_action_analytics">Analytics</string>
 
     <string name="splash_bluetooth_unsupported_message">Solon requires a phone that supports Bluetooth.</string>
     <string name="splash_bluetooth_disabled_toast">Bluetooth must be on for all features.</string>
-    <string name="splash_progress_default">Starting up&#8230;</string>
+    <string name="splash_permission_info_title">Permissions</string>
+    <string name="splash_permission_info_message">Solon needs location services to search for Bluetooth devices.</string>
+    <string name="splash_permission_disabled_toast">Locations must be permitted for all features.</string>
     <string name="splash_progress_connect_successful">The connection was successful!</string>
     <string name="splash_progress_connect_unsuccessful">The connection failed.</string>
 
     <string name="connect_power_title">Solon requires Bluetooth</string>
     <string name="connect_power_message">Are you sure you want to disconnect?</string>
+    <string name="connect_scan_title">Scanning for Solon&#8230;</string>
+    <string name="connect_scan_no_name">Unknown Device</string>
 </resources>

@@ -3,6 +3,7 @@ package com.bme.solon.bluetooth;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.os.ParcelUuid;
 import android.util.Log;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.util.UUID;
 public class BluetoothManager {
     public static final int REQUEST_ENABLE_BT = 10000; //Const for enable bluetooth intent
     public static final UUID DEVICE_UUID = UUID.randomUUID(); //Const for device's Bluetooth UUID. Must match the hardware.
+    public static final ParcelUuid HARDWARE_UUID = ParcelUuid.fromString("0000dfb0-0000-1000-8000-00805f9b34fb");
 
     private static final String TAG = "BluetoothManager";
 
@@ -39,6 +41,14 @@ public class BluetoothManager {
      */
     public BluetoothAdapter getAdapter() {
         return bluetoothAdapter;
+    }
+
+    /**
+     * Check if Bluetooth is on
+     * @return      True if enabled
+     */
+    public boolean isBluetoothOn() {
+        return bluetoothAdapter.isEnabled();
     }
 
     /**
