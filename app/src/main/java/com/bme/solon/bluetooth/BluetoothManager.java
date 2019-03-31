@@ -21,8 +21,7 @@ public class BluetoothManager {
 
     private static BluetoothManager singleton;
     private BluetoothAdapter bluetoothAdapter;
-    private BluetoothGatt gattClient;
-    
+
     /**
      * Private constructor
      * @throws BluetoothUnsupportedException    If the phone does not support Bluetooth
@@ -109,10 +108,10 @@ public class BluetoothManager {
      * @param context           Calling context
      * @param bluetoothCallback Callback listener
      */
-    void connectToDevice(BluetoothDevice device, Context context, BluetoothGattCallback bluetoothCallback) {
+    BluetoothGatt connectToDevice(BluetoothDevice device, Context context, BluetoothGattCallback bluetoothCallback) {
         Log.d(TAG, "connectToDevice: " + device.getName() + " with address " + device.getAddress() + " from context " + context.toString());
         synchronized (this) {
-            gattClient = device.connectGatt(context, true, bluetoothCallback);
+            return device.connectGatt(context, true, bluetoothCallback);
         }
     }
 

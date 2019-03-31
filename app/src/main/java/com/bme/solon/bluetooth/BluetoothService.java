@@ -17,6 +17,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.bme.solon.R;
@@ -40,6 +41,7 @@ public class BluetoothService extends Service {
 
     private BluetoothManager btManager;
 
+    private BluetoothGatt gattClient;
     private int gattStatus; //BluetoothProfile.STATE_###
     private BluetoothGattCharacteristic serialChar;
     private BluetoothGattCharacteristic commandChar;
@@ -49,7 +51,6 @@ public class BluetoothService extends Service {
      * Callback listener for an active connection.
      */
     private BluetoothGattCallback bluetoothCallback =  new BluetoothGattCallback() {
-
         /**
          * Start discovering services if connected.
          * @param gatt      GATT client
@@ -58,11 +59,20 @@ public class BluetoothService extends Service {
          */
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            Log.d(TAG, "onConnectionStateChange: newState = " + newState);
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                gatt.discoverServices();
+            if (status == BluetoothGatt.GATT_FAILURE) {
+                Log.w(TAG, "onConnectionStateChange: error occurred, disconnecting");
+                gatt.disconnect();
             }
-            gattStatus = newState;
+            else {
+                Log.d(TAG, "onConnectionStateChange: newState = " + newState);
+                if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    broadcastConnected();
+                    gatt.discoverServices();
+                } else {
+                    broadcastDisconnected();
+                }
+                gattStatus = newState;
+            }
         }
 
         /**
@@ -108,7 +118,7 @@ public class BluetoothService extends Service {
                 }
                 else {
                     Log.w(TAG, "onServicesDiscovered: no service had a Serial Port characteristic, disconnecting");
-                    //TODO: disconnect
+                    gatt.disconnect();
 
                     serialChar = null;
                     commandChar = null;
@@ -224,7 +234,10 @@ public class BluetoothService extends Service {
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
         stopForeground(true);
-        //TODO: destroy
+        if (gattClient != null) {
+            gattClient.close();
+            gattClient = null;
+        }
     }
 
     /**
@@ -233,6 +246,25 @@ public class BluetoothService extends Service {
      */
     public boolean isBluetoothOn() {
         return btManager.isBluetoothOn();
+    }
+
+    /**
+     * Retrieve the status of the connection.
+     * @return  the BluetoothProfile.STATE_###
+     */
+    public int getGattStatus() {
+        return gattStatus;
+    }
+
+    /**
+     * Retrieve the connected Bluetooth device
+     * @return  the Bluetooth device or null if not connected.
+     */
+    public BluetoothDevice getConnectedDevice() {
+        if (gattClient == null) {
+            return null;
+        }
+        return gattClient.getDevice();
     }
 
     /**
@@ -270,7 +302,8 @@ public class BluetoothService extends Service {
         handler.post(() -> {
             Log.d(TAG, "connectToDevice: running task with Map " + deviceData.toString());
             BluetoothDevice device = btManager.queryPaired(deviceData.get(Device.COLUMN_NAME), deviceData.get(Device.COLUMN_ADDRESS));
-            btManager.connectToDevice(device, this, bluetoothCallback);
+            gattClient = btManager.connectToDevice(device, this, bluetoothCallback);
+            broadcastConnecting(device);
         });
     }
 
@@ -282,7 +315,8 @@ public class BluetoothService extends Service {
         Log.d(TAG, "connectToDevice: posting task with BluetoothDevice " + device.toString());
         handler.post(() -> {
             Log.d(TAG, "connectToDevice: running task with BluetoothDevice " + device.toString());
-            btManager.connectToDevice(device, this, bluetoothCallback);
+            gattClient = btManager.connectToDevice(device, this, bluetoothCallback);
+            broadcastConnecting(device);
         });
     }
 
@@ -293,5 +327,39 @@ public class BluetoothService extends Service {
      */
     private void processCharacteristic(byte[] value) {
 
+    }
+
+    private void broadcast(int state) {
+        final Intent intent = new Intent();
+
+    }
+
+    private void broadcastConnecting (BluetoothDevice device) {
+        Log.v(TAG, "broadcastConnecting: device " + device.getName() + " " + device.getAddress());
+        final Intent intent = new Intent(BluetoothBroadcast.ACTION_CONNECTING);
+        intent.putExtra(BluetoothBroadcast.KEY_DEVICE_NAME, device.getName());
+        intent.putExtra(BluetoothBroadcast.KEY_DEVICE_ADDRESS, device.getAddress());
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private void broadcastConnected() {
+        Log.v(TAG, "broadcastConnecting: update only");
+        final Intent intent = new Intent(BluetoothBroadcast.ACTION_CONNECTED_UPDATE);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private void broadcastConnected (BluetoothDevice device) {
+        Log.v(TAG, "broadcastConnected: device " + device.getName() + " " + device.getAddress());
+        final Intent intent = new Intent(BluetoothBroadcast.ACTION_CONNECTED);
+        intent.putExtra(BluetoothBroadcast.KEY_DEVICE_NAME, device.getName());
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private void broadcastDisconnected () {
+        Log.v(TAG, "broadcastDisconnected");
+        final Intent intent = new Intent(BluetoothBroadcast.ACTION_DISCONNECTED);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 }

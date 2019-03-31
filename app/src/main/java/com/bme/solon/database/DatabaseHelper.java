@@ -199,6 +199,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(instance.getId())});
     }
 
+    /*public int addPairedDevice() {
+
+    }*/
+
     // insert instance (when new instance detected)
     // grabbing Instance (from time period, etc)
     // grabbing instance (by id, time, etc)

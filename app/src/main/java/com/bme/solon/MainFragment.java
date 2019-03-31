@@ -1,5 +1,6 @@
 package com.bme.solon;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 
 import com.bme.solon.bluetooth.BluetoothService;
@@ -36,4 +37,10 @@ public abstract class MainFragment extends Fragment {
         btService = null;
         isServiceBound = false;
     }
+
+    /**
+     * Override to make UI changes based on {@link BluetoothService} broadcasts.
+     * @param intent    The broadcasted intent.
+     */
+    abstract protected void receiveBroadcast(Intent intent);
 }

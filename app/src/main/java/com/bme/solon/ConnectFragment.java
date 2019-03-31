@@ -2,9 +2,12 @@ package com.bme.solon;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,8 +16,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bme.solon.bluetooth.BluetoothBroadcast;
 import com.bme.solon.bluetooth.BluetoothManager;
 
 public class ConnectFragment extends MainFragment {
@@ -27,6 +32,9 @@ public class ConnectFragment extends MainFragment {
 
     private AlertDialog scanDialog;
     private ScanCallback scanCallback;  //need to start & stop scan, never null after discoverBluetooth() is called the first time
+
+    private TextView activeNameView;
+    private TextView activeStatusView;
 
     /**
      * Required empty constructor
@@ -76,7 +84,80 @@ public class ConnectFragment extends MainFragment {
         button = fragmentView.findViewById(R.id.connect_button_discover);
         button.setOnClickListener((view) -> discoverBluetooth(view));
 
+        //Find the rest of the views
+        activeNameView = fragmentView.findViewById(R.id.connect_active_name);
+        activeStatusView = fragmentView.findViewById(R.id.connect_active_status);
+
         return fragmentView;
+    }
+
+    /**
+     * Initialize views based on current Bluetooth status.
+     */
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart");
+
+        if (isServiceBound) {
+            if (!btService.isBluetoothOn()) {
+                activeNameView.setText(getText(R.string.status_disconnected_device));
+                activeStatusView.setText(getText(R.string.status_bluetooth_off));
+            }
+            else {
+                BluetoothDevice device = btService.getConnectedDevice();
+                switch (btService.getGattStatus()) {
+                    case BluetoothProfile.STATE_DISCONNECTED:
+                        activeNameView.setText(getText(R.string.status_disconnected_device));
+                        activeStatusView.setText(getText(R.string.status_disconnected));
+                        break;
+                    case BluetoothProfile.STATE_CONNECTING:
+                        activeNameView.setText(device.getName());
+                        activeStatusView.setText(getText(R.string.status_connecting));
+                        break;
+                    case BluetoothProfile.STATE_CONNECTED:
+                        activeNameView.setText(device.getName());
+                        activeStatusView.setText(getText(R.string.status_connected));
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Update UI accordingly to broadcast
+     * @param intent    The broadcasted intent.
+     */
+    @Override
+    protected void receiveBroadcast(Intent intent) {
+        switch (intent.getAction()) {
+            case BluetoothAdapter.ACTION_STATE_CHANGED:
+                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+                switch (state) {
+                    case BluetoothAdapter.STATE_OFF:
+                        activeNameView.setText(getText(R.string.status_disconnected_device));
+                        activeStatusView.setText(getText(R.string.status_bluetooth_off));
+                        break;
+                    case BluetoothAdapter.STATE_ON:
+                        activeNameView.setText(getText(R.string.status_disconnected_device));
+                        activeStatusView.setText(getText(R.string.status_disconnected));
+                        break;
+                }
+                break;
+            case BluetoothBroadcast.ACTION_CONNECTING:
+                activeNameView.setText(intent.getStringExtra(BluetoothBroadcast.KEY_DEVICE_NAME));
+                activeStatusView.setText(getText(R.string.status_connecting));
+                break;
+            case BluetoothBroadcast.ACTION_CONNECTED:
+                break;
+            case BluetoothBroadcast.ACTION_CONNECTED_UPDATE:
+                activeStatusView.setText(getText(R.string.status_connected));
+                break;
+            case BluetoothBroadcast.ACTION_DISCONNECTED:
+                activeNameView.setText(getText(R.string.status_disconnected_device));
+                activeStatusView.setText(getText(R.string.status_disconnected));
+                break;
+        }
     }
 
     private void toggleBluetooth(View view) {

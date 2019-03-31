@@ -1,8 +1,12 @@
 package com.bme.solon;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothProfile;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,6 +23,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 
+import com.bme.solon.bluetooth.BluetoothBroadcast;
 import com.bme.solon.bluetooth.BluetoothService;
 
 /**
@@ -39,6 +44,14 @@ public class MainActivity extends AppCompatActivity {
     private MainFragment currentFragment;
 
     private ServiceConnection btServiceConnection;
+    private IntentFilter btServiceReceiverFilter;
+    private BroadcastReceiver btServiceReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onReceive: action = " + intent.getAction());
+            currentFragment.receiveBroadcast(intent);
+        }
+    };
 
     @Override
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -98,6 +111,14 @@ public class MainActivity extends AppCompatActivity {
         currentFragmentNum = 0;
         currentFragment = new HomeFragment();
         fragmentManager.beginTransaction().add(R.id.main_fragment_view, currentFragment).commit();
+
+        //initialize intent filter for broadcasts
+        btServiceReceiverFilter = new IntentFilter();
+        btServiceReceiverFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        btServiceReceiverFilter.addAction(BluetoothBroadcast.ACTION_CONNECTING);
+        btServiceReceiverFilter.addAction(BluetoothBroadcast.ACTION_CONNECTED);
+        btServiceReceiverFilter.addAction(BluetoothBroadcast.ACTION_CONNECTED_UPDATE);
+        btServiceReceiverFilter.addAction(BluetoothBroadcast.ACTION_DISCONNECTED);
     }
 
     /**
@@ -135,6 +156,9 @@ public class MainActivity extends AppCompatActivity {
         //bind to service
         Intent intent = new Intent(this, BluetoothService.class);
         bindService(intent, btServiceConnection, Context.BIND_AUTO_CREATE);
+
+        //register broadcast receiver
+        registerReceiver(btServiceReceiver, btServiceReceiverFilter);
     }
 
     /**
@@ -145,6 +169,10 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
         Log.d(TAG, "onStop");
 
+        //unregister broadcast receiver
+        unregisterReceiver(btServiceReceiver);
+
+        //unbind service
         if (currentFragment.isServiceBound) {
             Log.d(TAG, "onStop: unbinding service");
             unbindService(btServiceConnection);
