@@ -268,6 +268,28 @@ public class BluetoothService extends Service {
     }
 
     /**
+     * Enable Bluetooth
+     */
+    public void enableBluetooth() {
+        Log.d(TAG, "enableBluetooth; posting task");
+        handler.post(() -> {
+            Log.d(TAG, "enableBluetooth; running task");
+            btManager.enableBlueooth();
+        });
+    }
+
+    /**
+     * Disable Bluetooth
+     */
+    public void disableBluetooth() {
+        Log.d(TAG, "disableBluetooth; posting task");
+        handler.post(() -> {
+            Log.d(TAG, "disableBluetooth; running task");
+            btManager.disableBluetooth();
+        });
+    }
+
+    /**
      * Start Bluetooth discovery with scanCallback
      * @param scanCallback  Callback listener
      */

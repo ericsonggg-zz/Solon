@@ -25,7 +25,6 @@ import com.bme.solon.bluetooth.BluetoothManager;
 public class ConnectFragment extends MainFragment {
     private static final String TAG = "ConnectFragment";
 
-    private BluetoothManager bluetoothManager;
     private RecyclerView pairList;
     private ScanListAdapter pairAdapter;
     private RecyclerView.LayoutManager pairLayoutManager;
@@ -35,6 +34,7 @@ public class ConnectFragment extends MainFragment {
 
     private TextView activeNameView;
     private TextView activeStatusView;
+    private TextView toggleButtonTextView;
 
     /**
      * Required empty constructor
@@ -74,9 +74,6 @@ public class ConnectFragment extends MainFragment {
                 })
                 .create();
 
-        //initialize BluetoothManager
-        bluetoothManager = BluetoothManager.getInstance();
-
         //Set button listeners
         AppCompatImageButton button = fragmentView.findViewById(R.id.connect_button_power);
         button.setOnClickListener((view) -> toggleBluetooth(view));
@@ -87,6 +84,7 @@ public class ConnectFragment extends MainFragment {
         //Find the rest of the views
         activeNameView = fragmentView.findViewById(R.id.connect_active_name);
         activeStatusView = fragmentView.findViewById(R.id.connect_active_status);
+        toggleButtonTextView = fragmentView.findViewById(R.id.connect_button_power_text);
 
         return fragmentView;
     }
@@ -103,9 +101,11 @@ public class ConnectFragment extends MainFragment {
             if (!btService.isBluetoothOn()) {
                 activeNameView.setText(getText(R.string.status_disconnected_device));
                 activeStatusView.setText(getText(R.string.status_bluetooth_off));
+                toggleButtonTextView.setText(getText(R.string.on));
             }
             else {
                 BluetoothDevice device = btService.getConnectedDevice();
+                toggleButtonTextView.setText(getText(R.string.off));
                 switch (btService.getGattStatus()) {
                     case BluetoothProfile.STATE_DISCONNECTED:
                         activeNameView.setText(getText(R.string.status_disconnected_device));
@@ -137,10 +137,12 @@ public class ConnectFragment extends MainFragment {
                     case BluetoothAdapter.STATE_OFF:
                         activeNameView.setText(getText(R.string.status_disconnected_device));
                         activeStatusView.setText(getText(R.string.status_bluetooth_off));
+                        toggleButtonTextView.setText(getText(R.string.on));
                         break;
                     case BluetoothAdapter.STATE_ON:
                         activeNameView.setText(getText(R.string.status_disconnected_device));
                         activeStatusView.setText(getText(R.string.status_disconnected));
+                        toggleButtonTextView.setText(getText(R.string.off));
                         break;
                 }
                 break;
@@ -160,25 +162,48 @@ public class ConnectFragment extends MainFragment {
         }
     }
 
+    /**
+     * Enable or disable Bluetooth.
+     * Prompts user to confirm turning it off. No prompt for turning on.
+     * @param view  The button view.
+     */
     private void toggleBluetooth(View view) {
-        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
-        if (bluetoothAdapter.isEnabled()) {
+        if (!isServiceBound) {
+            Log.e(TAG, "toggleBluetooth: service is unbound when it should be bound");
+            Toast.makeText(getActivity(), R.string.something_went_wrong, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (btService.isBluetoothOn()) {
             AlertDialog.Builder confirmOffDialog = new AlertDialog.Builder(getActivity());
             confirmOffDialog.setTitle(R.string.confirm)
-                    .setMessage(R.string.connect_power_message)
                     .setCancelable(true)
                     .setPositiveButton(R.string.yes, (dialogInterface, i) -> {
-                        bluetoothAdapter.disable();
-                        //TODO: add other UI hooks
-                    }).setNegativeButton(R.string.cancel, null)
-                    .create().show();
+                        Log.d(TAG, "toggleBluetooth: off");
+                        btService.disableBluetooth();
+                    }).setNegativeButton(R.string.cancel, null);
+
+            if (btService.getGattStatus() == BluetoothProfile.STATE_DISCONNECTED) {
+                Log.v(TAG, "toggleBluetooth: prompt for dead connection");
+                confirmOffDialog.setMessage(R.string.connect_power_disconnected_message);
+            }
+            else {
+                Log.v(TAG, "toggleBluetooth: prompt for live connection");
+                confirmOffDialog.setMessage(R.string.connect_power_connected_message);
+            }
+
+            confirmOffDialog.create().show();
         }
         else {
-            bluetoothAdapter.enable();
-            //TODO: add hooks
+            Log.d(TAG, "toggleBluetooth: on");
+            btService.enableBluetooth();
         }
     }
 
+    /**
+     * Start scanning for new Solon devices.
+     * @param view  Button view
+     */
     private void discoverBluetooth(View view) {
         if (!isServiceBound) {
             Log.e(TAG, "discoverBluetooth: service is unbound when it should be bound");
@@ -192,7 +217,7 @@ public class ConnectFragment extends MainFragment {
             return;
         }
 
-        scanDialog.show();      //show dialog
+        scanDialog.show(); //show dialog
 
         //Initialize RecyclerView in dialog
         RecyclerView scanDialogView = scanDialog.findViewById(R.id.connect_scan_view);

@@ -6,6 +6,8 @@
     <string name="no">No</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
     <string name="bluetooth_is_off">Bluetooth must be on for this function</string>
     <string name="something_went_wrong">Something went wrong, please restart the app</string>
 
@@ -32,7 +34,8 @@
     <string name="splash_progress_connect_unsuccessful">The connection failed.</string>
 
     <string name="connect_power_title">Solon requires Bluetooth</string>
-    <string name="connect_power_message">Are you sure you want to disconnect?</string>
+    <string name="connect_power_connected_message">There is an active connection. Do you still want to disconnect?</string>
+    <string name="connect_power_disconnected_message">Are you sure you want to disconnect?</string>
     <string name="connect_scan_title">Scanning for Solon&#8230;</string>
     <string name="connect_scan_no_name">Unknown Device</string>
 </resources>

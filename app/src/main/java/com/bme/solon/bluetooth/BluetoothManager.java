@@ -64,12 +64,26 @@ public class BluetoothManager {
     }
 
     /**
+     * Enable Bluetooth
+     */
+    void enableBlueooth() {
+        bluetoothAdapter.enable();
+    }
+
+    /**
+     * Disable Bluetooth
+     */
+    void disableBluetooth() {
+        bluetoothAdapter.disable();
+    }
+
+    /**
      * Check if the specified device has previously been paired.
      * @param deviceName        Name of Bluetooth device
      * @param deviceAddress     MAC address of Bluetooth device
      * @return      The paired device if exists. Otherwise, null.
      */
-    public BluetoothDevice queryPaired(String deviceName, String deviceAddress) {
+    BluetoothDevice queryPaired(String deviceName, String deviceAddress) {
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
 
         if (pairedDevices.size() > 0) {
