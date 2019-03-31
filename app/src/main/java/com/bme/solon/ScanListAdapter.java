@@ -2,11 +2,6 @@ package com.bme.solon;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.le.ScanCallback;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -19,6 +14,9 @@ import com.bme.solon.bluetooth.BluetoothService;
 
 import java.util.ArrayList;
 
+/**
+ * Adapter class for {@link RecyclerView} specifically for scanned devices
+ */
 public class ScanListAdapter extends RecyclerView.Adapter<ScanListAdapter.ScanListViewHolder> {
     private static final String TAG = "ScanListAdapter";
 
@@ -26,20 +24,31 @@ public class ScanListAdapter extends RecyclerView.Adapter<ScanListAdapter.ScanLi
     private AlertDialog dialog;
     private BluetoothService btService;
 
+    /**
+     * ViewHolder specific for scanned devices.
+     */
     public static class ScanListViewHolder extends RecyclerView.ViewHolder {
         private TextView name;
         private TextView address;
 
+        /**
+         * Constructor
+         * @param itemView  View object
+         */
         public ScanListViewHolder(View itemView) {
             super(itemView);
-
             name = itemView.findViewById(R.id.connect_pair_list_name);
             address = itemView.findViewById(R.id.connect_pair_list_address);
         }
 
+        /**
+         * Bind device data to the appropriate TextViews.
+         * @param device    Device to show
+         */
         public void bindData(BluetoothDevice device) {
+            Log.d(TAG, "bindData");
             if (device != null) {
-                Log.d("ScanListAdapter", device.getName() + " " + device.getAddress());
+                Log.d(TAG, "bindData: device - " + device.getName() + " " + device.getAddress());
                 if (device.getName() == null || device.getName().length() <= 0) {
                     name.setText(R.string.connect_scan_no_name);
                 }
@@ -47,6 +56,7 @@ public class ScanListAdapter extends RecyclerView.Adapter<ScanListAdapter.ScanLi
                     name.setText(device.getName());
                 }
                 address.setText(device.getAddress());
+                //TODO: refer to database to lookup names
             }
         }
     }
@@ -57,18 +67,26 @@ public class ScanListAdapter extends RecyclerView.Adapter<ScanListAdapter.ScanLi
     public class ScanListListener implements View.OnClickListener {
         private int position;
 
+        /**
+         * Constructor
+         * @param position      Position in RecyclerView list
+         */
         public ScanListListener(int position) {
             this.position = position;
         }
 
+        /**
+         * Try to connect with device
+         * @param view  View that was clicked
+         */
         @Override
         public void onClick(View view) {
-            Log.d("YAY","hue");
             dialog.dismiss(); //this should cancel Bluetooth discovery automatically
 
             //Start the connection
             BluetoothDevice device = deviceList.get(position);
             btService.connectToDevice(device);
+            Log.d(TAG,"onClick: device = " + device.toString());
         }
     }
 
