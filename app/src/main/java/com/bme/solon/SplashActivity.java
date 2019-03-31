@@ -263,7 +263,7 @@ public class SplashActivity extends AppCompatActivity {
         }
 
         //TODO: remove cause testing
-        addDevices();
+        //addDevices();
 
         ChangeActivityAsync finalTask = new ChangeActivityAsync(this, tasks);
         finalTask.execute();
