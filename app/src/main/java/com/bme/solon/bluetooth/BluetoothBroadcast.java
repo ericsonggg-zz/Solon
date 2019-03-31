@@ -9,6 +9,8 @@ public class BluetoothBroadcast {
     public static final String ACTION_CONNECTED = "com.bme.solon.ACTION_CONNECTED";
     public static final String ACTION_CONNECTED_UPDATE = "com.bme.solon.ACTION_CONNECTED_UPDATE";
     public static final String ACTION_DISCONNECTED = "com.bme.solon.ACTION_DISCONNECTED";
+    public static final String ACTION_ADDRESS = "com.bme.solon.ADDRESS";
+    public static final String ACTION_SNOOZE = "com.bme.solon.SNOOZE";
 
     public static final String KEY_DEVICE_NAME = "KEY_DEVICE_NAME";
     public static final String KEY_DEVICE_ADDRESS = "KEY_DEVICE_ADDRESS";

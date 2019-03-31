@@ -83,7 +83,9 @@ public class SplashActivity extends AppCompatActivity {
             importance = NotificationManager.IMPORTANCE_MAX;
             channel = new NotificationChannel(BluetoothService.NOTIFICATION_INSTANCE_CHANNEL, name, importance);
             channel.setDescription(description);
+            channel.shouldShowLights();
             channel.enableLights(true);
+            channel.shouldVibrate();
             channel.enableVibration(true);
 
             notificationManager.createNotificationChannel(channel);

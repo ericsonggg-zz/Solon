@@ -10,7 +10,10 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanCallback;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -22,11 +25,9 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.bme.solon.MainActivity;
 import com.bme.solon.R;
-import com.bme.solon.SplashActivity;
 import com.bme.solon.database.Device;
-
-import java.util.Map;
 
 public class BluetoothService extends Service {
     public static final String THREAD_NAME = "BluetoothService";
@@ -34,6 +35,8 @@ public class BluetoothService extends Service {
     public static final String NOTIFICATION_INSTANCE_CHANNEL = "SolonInstance";
     public static final int NOTIFICATION_SERVICE_ID = 39573;
     public static final int NOTIFICATION_INSTANCE_ID = 40219;
+    public static final long SNOOZE_DELAY_MILLIS = 15000; //900000;
+
     public static final String HARDWARE_SERIAL_UUID = "0000dfb1-0000-1000-8000-00805f9b34fb";
     public static final String HARDWARE_COMMAND_UUID = "0000dfb2-0000-1000-8000-00805f9b34fb";
     public static final String HARDWARE_MODEL_NUMBER_UUID = "00002a24-0000-1000-8000-00805f9b34fb";
@@ -55,7 +58,7 @@ public class BluetoothService extends Service {
     /**
      * Callback listener for an active connection.
      */
-    private BluetoothGattCallback bluetoothCallback =  new BluetoothGattCallback() {
+    private final BluetoothGattCallback bluetoothCallback =  new BluetoothGattCallback() {
         /**
          * Start discovering services if connected.
          * @param gatt      GATT client
@@ -165,6 +168,30 @@ public class BluetoothService extends Service {
         }
     };
 
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onReceive: action = " + intent.getAction());
+
+            //cancel notification
+            NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
+            notificationManagerCompat.cancel(NOTIFICATION_INSTANCE_ID);
+
+            switch (intent.getAction()) {
+                case BluetoothBroadcast.ACTION_ADDRESS: //start activity
+                    Intent activityIntent = new Intent(context, MainActivity.class);
+                    startActivity(activityIntent);
+                    break;
+                case BluetoothBroadcast.ACTION_SNOOZE: //notify again later
+                    Log.d(TAG,"onReceive: posting snooze task");
+                    handler.postDelayed(() -> {
+                        Log.d(TAG, "onReceive: running snooze task");
+                        notifyUser();
+                    }, SNOOZE_DELAY_MILLIS);
+            }
+        }
+    };
+
     /**
      * Thread handler to post Runnables or Messages.
      */
@@ -211,6 +238,12 @@ public class BluetoothService extends Service {
 
         startForeground(NOTIFICATION_SERVICE_ID, notification.build());
 
+        //register broadcast receiver
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothBroadcast.ACTION_ADDRESS);
+        filter.addAction(BluetoothBroadcast.ACTION_SNOOZE);
+        registerReceiver(broadcastReceiver, filter);
+
         //TODO: START BT
     }
 
@@ -218,7 +251,7 @@ public class BluetoothService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
 
-        //notifyUser();
+        notifyUser();
         return START_STICKY;
     }
 
@@ -287,7 +320,8 @@ public class BluetoothService extends Service {
         Log.d(TAG, "disableBluetooth; posting task");
         handler.post(() -> {
             Log.d(TAG, "disableBluetooth; running task");
-            btManager.disableBluetooth();
+            notifyUser();
+            //btManager.disableBluetooth();
         });
     }
 
@@ -361,19 +395,38 @@ public class BluetoothService extends Service {
     }
 
     private void notifyUser() {
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, NOTIFICATION_INSTANCE_CHANNEL)
+        Log.d(TAG, "notifyUser");
+
+        //Fullscreen notification
+        Intent notifIntent = new Intent(this, MainActivity.class);
+        notifIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent notifPdIntent = PendingIntent.getActivity(this, 0, notifIntent, 0);
+
+        //Address now
+        Intent addressIntent = new Intent(BluetoothBroadcast.ACTION_ADDRESS);
+        PendingIntent addressPdIntent = PendingIntent.getBroadcast(this, 0, addressIntent, 0);
+
+        //Snooze
+        Intent snoozeIntent = new Intent(BluetoothBroadcast.ACTION_SNOOZE);
+        PendingIntent snoozePdIntent = PendingIntent.getBroadcast(this, 0, snoozeIntent, 0);
+
+        Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_INSTANCE_CHANNEL)
                 .setSmallIcon(R.mipmap.logo_round)
                 .setContentTitle(getString(R.string.notif_incontinence_title))
 //                .setContentText(String.format(getString(R.string.notif_incontinence_message), device.getAppName()))
                 .setContentText(String.format(getString(R.string.notif_incontinence_message), "TEST_NAME"))
                 .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setVibrate(new long[] {1000,1000,1000,1000,1000})
-                .setLights(Color.RED, 3000, 3000);
-
-
+                .setVibrate(new long[] {1000})
+                .setLights(Color.RED, 3000, 3000)
+                .setFullScreenIntent(notifPdIntent, true)
+                .setAutoCancel(true)
+                .addAction(R.drawable.ic_checkmark, getString(R.string.notif_address_message), addressPdIntent)
+                .addAction(R.drawable.ic_clock_plus, getString(R.string.notif_snooze_message), snoozePdIntent)
+                .build();
+        notification.flags |= Notification.FLAG_INSISTENT; //make sound constantly play
 
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
-        notificationManagerCompat.notify(NOTIFICATION_INSTANCE_ID, notification.build());
+        notificationManagerCompat.notify(NOTIFICATION_INSTANCE_ID, notification);
     }
 
     private void broadcast(int state) {

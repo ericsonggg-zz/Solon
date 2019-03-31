@@ -25,6 +25,8 @@
 
     <string name="notif_incontinence_title">Incontinence Detected!</string>
     <string name="notif_incontinence_message">%1$s has detected incontinence.</string>
+    <string name="notif_address_message">Address now</string>
+    <string name="notif_snooze_message">Snooze for 15 mins</string>
 
     <string name="toolbar_action_home">Home</string>
     <string name="toolbar_action_connect">Connections</string>
