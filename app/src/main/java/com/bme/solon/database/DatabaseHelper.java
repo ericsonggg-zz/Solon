@@ -18,13 +18,14 @@ import java.util.List;
 import java.util.Map;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
+    private static final String TAG = "DatabaseHelper";
 
-    private static DatabaseHelper singleton;        //singleton
+    private static DatabaseHelper singleton; //singleton
     private SQLiteDatabase readDb;
-    //TODO: make writeable DB a class variable
+    private SQLiteDatabase writeDb;
 
     // Database Version
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 5;
 
     // Database Name
     private static final String DATABASE_NAME = "Instance_db";
@@ -36,6 +37,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         readDb = getReadableDatabase();
+        writeDb = getWritableDatabase();
     }
 
     /**
@@ -63,16 +65,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Creating Tables
     @Override
     public void onCreate(SQLiteDatabase db) {
+        Log.i(TAG, "onCreate");
 
-        // create notes table
         db.execSQL(Instance.CREATE_TABLE);
         db.execSQL(Device.CREATE_TABLE);
     }
 
-    // Upgrading database
+    /**
+     * On database upgrade, delete all prior entries and recreate schema
+     */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Drop older table if existed
+        Log.i(TAG, "onUpgrade");
+        // Drop older table if existing
         db.execSQL("DROP TABLE IF EXISTS " + Instance.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + Device.TABLE_NAME);
         //TODO: migrate tables, not drop
@@ -209,6 +214,64 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // mark instance as read
 
     /**
+     * Add an active device into the {@link Device} database.
+     * Checks for duplicates - if already inserted, updates existing row.
+     * @param device    Device to add
+     */
+    public long addActiveDevice(Device device) {
+        long id = -1;
+        ContentValues values = new ContentValues();
+
+        if (getDevice(device.getName(), device.getAddress()) == null) {
+            Log.d(TAG, "addActiveDevice: adding new device");
+            values.put(Device.COLUMN_NAME, device.getName());
+            values.put(Device.COLUMN_ADDRESS, device.getAddress());
+            values.put(Device.COLUMN_ACTIVE, 1);
+            values.put(Device.COLUMN_APPNAME, device.getAppName());
+            id = writeDb.insert(Device.TABLE_NAME, null, values);
+        }
+        else {
+            Log.d(TAG, "addActiveDevice: updating values");
+            values.put(Device.COLUMN_APPNAME, device.getAppName());
+            id = writeDb.update(Device.TABLE_NAME,
+                    values,
+                    Device.COLUMN_NAME + "=? AND " + Device.COLUMN_ADDRESS + "=?",
+                    new String[] {device.getName(), device.getAddress()});
+        }
+        return id;
+    }
+
+    /**
+     * Query database for a specific device
+     * @param name      Bluetooth name
+     * @param address   Bluetooth address
+     * @return          Device if found, otherwise null
+     */
+    public Device getDevice(String name, String address) {
+        Log.v(TAG, "getDevice: name = " + name + " address = " + address);
+
+        Cursor cursor = readDb.query(Device.TABLE_NAME,
+                null,
+                Device.COLUMN_NAME + "=? AND " + Device.COLUMN_ADDRESS + "=?",
+                new String[] {name, address},
+                null, null, null, null);
+
+        if (cursor != null && cursor.getCount() > 0) {
+            Log.d(TAG, "getDevice: device found");
+            cursor.moveToFirst();
+            return new Device(
+                    cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ID)),
+                    cursor.getString(cursor.getColumnIndex(Device.COLUMN_NAME)),
+                    cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)),
+                    cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ACTIVE)),
+                    cursor.getString(cursor.getColumnIndex(Device.COLUMN_APPNAME))
+            );
+        }
+        Log.d(TAG,"getDevice: device not found");
+        return null;
+    }
+
+    /**
      * Query database for the "active" device details.
      * @return      Map with device credentials if an active device exists.
      *              Otherwise an empty map.
@@ -227,5 +290,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             device.put(Device.COLUMN_ADDRESS, cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)));
         }
         return device;
+    }
+
+    /**
+     * Query {@link Device} database for all entries.
+     * @return  All paired devices.
+     */
+    public List<Device> getPairedDevices() {
+        Log.d(TAG, "getPairedDevices");
+        List<Device> devices = new ArrayList<>();
+
+        Cursor cursor = readDb.query(Device.TABLE_NAME,
+                null,null,null, null, null, null, null);
+
+        if (cursor != null && cursor.getCount() > 0) {
+            Log.d(TAG, "getPairedDevices: db query found device(s)");
+            cursor.moveToFirst();
+
+            //Loop over all instances
+            do {
+                Device device = new Device(
+                        cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ID)),
+                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_NAME)),
+                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)),
+                        cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ACTIVE)),
+                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_APPNAME))
+                );
+                devices.add(device);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return devices;
     }
 }

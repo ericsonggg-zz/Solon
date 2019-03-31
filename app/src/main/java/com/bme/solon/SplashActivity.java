@@ -23,6 +23,7 @@ import com.bme.solon.bluetooth.BluetoothManager;
 import com.bme.solon.bluetooth.BluetoothService;
 import com.bme.solon.bluetooth.BluetoothUnsupportedException;
 import com.bme.solon.database.DatabaseHelper;
+import com.bme.solon.database.Device;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -261,7 +262,16 @@ public class SplashActivity extends AppCompatActivity {
             bluetoothTask();
         }
 
+        //TODO: remove cause testing
+        addDevices();
+
         ChangeActivityAsync finalTask = new ChangeActivityAsync(this, tasks);
         finalTask.execute();
+    }
+
+    private void addDevices() {
+        db.addActiveDevice(new Device("TEST1","TEST1_ADDR"));
+        db.addActiveDevice(new Device("TEST2", "TEST2_ADDR"));
+        db.addActiveDevice(new Device("TEST3", "TEST3_ADDR", "TEST4_MOD"));
     }
 }

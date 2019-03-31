@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.bme.solon.bluetooth.BluetoothService;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Adapter class for {@link RecyclerView} specifically for scanned devices
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 public class ScanListAdapter extends RecyclerView.Adapter<ScanListAdapter.ScanListViewHolder> {
     private static final String TAG = "ScanListAdapter";
 
-    private ArrayList<BluetoothDevice> deviceList;
+    private List<BluetoothDevice> deviceList;
     private AlertDialog dialog;
     private BluetoothService btService;
 

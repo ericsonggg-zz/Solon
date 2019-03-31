@@ -21,13 +21,13 @@ import android.widget.Toast;
 
 import com.bme.solon.bluetooth.BluetoothBroadcast;
 import com.bme.solon.bluetooth.BluetoothManager;
+import com.bme.solon.database.DatabaseHelper;
 
 public class ConnectFragment extends MainFragment {
     private static final String TAG = "ConnectFragment";
 
     private RecyclerView pairList;
-    private ScanListAdapter pairAdapter;
-    private RecyclerView.LayoutManager pairLayoutManager;
+    private PairListAdapter pairAdapter;
 
     private AlertDialog scanDialog;
     private ScanCallback scanCallback;  //need to start & stop scan, never null after discoverBluetooth() is called the first time
@@ -48,11 +48,12 @@ public class ConnectFragment extends MainFragment {
         // Inflate the layout for this fragment
         View fragmentView = inflater.inflate(R.layout.fragment_connect, container, false);
 
-        //initialize RecyclerView
+        //initialize paired devices RecyclerView
         pairList = fragmentView.findViewById(R.id.connect_pair_list);
         pairList.setHasFixedSize(true);
-        pairLayoutManager = new LinearLayoutManager(getContext());
-        pairList.setLayoutManager(pairLayoutManager);
+        pairList.setLayoutManager(new LinearLayoutManager(getContext()));
+        pairAdapter = new PairListAdapter(btService);   //TODO: change this so its reactive to service unbinding
+        pairList.setAdapter(pairAdapter);
 
         scanDialog = new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.connect_scan_title)
@@ -97,6 +98,12 @@ public class ConnectFragment extends MainFragment {
         super.onStart();
         Log.d(TAG, "onStart");
 
+        //Populate pairList
+        DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
+        pairAdapter.addDevices(db.getPairedDevices());
+        pairAdapter.notifyDataSetChanged();
+
+        //Set text for remaining UI
         if (isServiceBound) {
             if (!btService.isBluetoothOn()) {
                 activeNameView.setText(getText(R.string.status_disconnected_device));

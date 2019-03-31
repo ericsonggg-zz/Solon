@@ -5,21 +5,21 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/connect_pair_list_name"
+        android:id="@+id/connect_scan_list_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:text="TextView"
-        app:layout_constraintBottom_toTopOf="@+id/connect_pair_list_address"
+        app:layout_constraintBottom_toTopOf="@+id/connect_scan_list_address"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/connect_pair_list_address"
+        android:id="@+id/connect_scan_list_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -31,7 +31,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/connect_pair_list_name" />
+        app:layout_constraintTop_toBottomOf="@+id/connect_scan_list_name" />
 
     <!--<ImageButton
         android:id="@+id/imageButton"
