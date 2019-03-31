@@ -128,7 +128,7 @@ public class ConnectFragment extends MainFragment {
                     getActivity().runOnUiThread(() -> {
                         //Manually filter since auto-filtering doesn't work on Galaxy S7Edge
                         ScanFilter filter = new ScanFilter.Builder().setServiceUuid(BluetoothManager.HARDWARE_UUID).build();
-                        Log.d(TAG, "discoverBluetooth: scan found result - " + result.getDevice().getName() + " ! " + filter.matches(result));
+                        Log.v(TAG, "discoverBluetooth: scan found result - " + result.getDevice().getName() + " ! " + filter.matches(result));
 
                         if (filter.matches(result)) {     //only show valid systems
                             scanAdapter.addDevice(result.getDevice());
