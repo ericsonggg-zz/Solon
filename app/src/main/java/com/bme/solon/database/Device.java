@@ -76,4 +76,12 @@ public class Device {
     public String getAppName() {
         return appName;
     }
+
+    public String toString() {
+        return "id=" + id +
+                ", name=" + name +
+                ", address=" + address +
+                ", active=" + active +
+                ", appName=" + appName;
+    }
 }

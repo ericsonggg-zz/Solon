@@ -18,8 +18,13 @@
     <string name="status_bluetooth_off">Bluetooth is off</string>
 
     <string name="bluno">Bluno</string>
-    <string name="channel_name">Solon Service</string>
-    <string name="channel_description">Solon bluetooth service</string>
+    <string name="channel_service_name">Solon Service</string>
+    <string name="channel_service_description">Bluetooth service</string>
+    <string name="channel_instance_name">Solon Alerts</string>
+    <string name="channel_instance_description">Instance alerts</string>
+
+    <string name="notif_incontinence_title">Incontinence Detected!</string>
+    <string name="notif_incontinence_message">%1$s has detected incontinence.</string>
 
     <string name="toolbar_action_home">Home</string>
     <string name="toolbar_action_connect">Connections</string>
@@ -28,8 +33,9 @@
     <string name="splash_bluetooth_unsupported_message">Solon requires a phone that supports Bluetooth.</string>
     <string name="splash_bluetooth_disabled_toast">Bluetooth must be on for all features.</string>
     <string name="splash_permission_info_title">Permissions</string>
-    <string name="splash_permission_info_message">Solon needs location services to search for Bluetooth devices.</string>
-    <string name="splash_permission_disabled_toast">Locations must be permitted for all features.</string>
+    <string name="splash_permission_location_message">Solon needs location services to search for Bluetooth devices.</string>
+    <string name="splash_permission_vibrate_message">Solon would like to vibrate urgent notifications.</string>
+    <string name="splash_permission_disabled_toast">Some features may be disabled until permissions are given.</string>
     <string name="splash_progress_connect_successful">The connection was successful!</string>
     <string name="splash_progress_connect_unsuccessful">The connection failed.</string>
 

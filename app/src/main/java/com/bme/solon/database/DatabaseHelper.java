@@ -249,6 +249,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     public Device getDevice(String name, String address) {
         Log.v(TAG, "getDevice: name = " + name + " address = " + address);
+        Device device = null;
 
         Cursor cursor = readDb.query(Device.TABLE_NAME,
                 null,
@@ -256,19 +257,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[] {name, address},
                 null, null, null, null);
 
-        if (cursor != null && cursor.getCount() > 0) {
-            Log.d(TAG, "getDevice: device found");
-            cursor.moveToFirst();
-            return new Device(
-                    cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ID)),
-                    cursor.getString(cursor.getColumnIndex(Device.COLUMN_NAME)),
-                    cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)),
-                    cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ACTIVE)),
-                    cursor.getString(cursor.getColumnIndex(Device.COLUMN_APPNAME))
-            );
+        if (cursor != null) {
+            if (cursor.getCount() > 0) {
+                Log.d(TAG, "getDevice: device found");
+                cursor.moveToFirst();
+                device = new Device(
+                        cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ID)),
+                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_NAME)),
+                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)),
+                        cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ACTIVE)),
+                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_APPNAME))
+                );
+            }
+            cursor.close();
         }
-        Log.d(TAG,"getDevice: device not found");
-        return null;
+        return device;
     }
 
     /**
@@ -276,18 +279,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * @return      Map with device credentials if an active device exists.
      *              Otherwise an empty map.
      */
-    public Map<String, String> getActiveDevice() {
-        Map<String, String> device = new HashMap<>();
+    public Device getActiveDevice() {
+        Log.d(TAG,"getActiveDevice");
+        Device device = null;
 
         Cursor cursor = readDb.query(Device.TABLE_NAME,
                 new String[]{Device.COLUMN_ID, Device.COLUMN_NAME, Device.COLUMN_ADDRESS, Device.COLUMN_ACTIVE},
                 Device.COLUMN_ACTIVE + "=1",
                 null, null, null, null, null);
 
-        if (cursor != null && cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            device.put(Device.COLUMN_NAME, cursor.getString(cursor.getColumnIndex(Device.COLUMN_NAME)));
-            device.put(Device.COLUMN_ADDRESS, cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)));
+        if (cursor != null) {
+            if (cursor.getCount() > 0) {
+                Log.d(TAG, "getActiveDevice: db query found device");
+                cursor.moveToFirst();
+                device = new Device(
+                        cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ID)),
+                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_NAME)),
+                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)),
+                        cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ACTIVE)),
+                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_APPNAME)));
+            }
+            cursor.close();
         }
         return device;
     }
@@ -303,23 +315,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Cursor cursor = readDb.query(Device.TABLE_NAME,
                 null,null,null, null, null, null, null);
 
-        if (cursor != null && cursor.getCount() > 0) {
-            Log.d(TAG, "getPairedDevices: db query found device(s)");
-            cursor.moveToFirst();
+        if (cursor != null) {
+            if (cursor.getCount() > 0) {
+                Log.d(TAG, "getPairedDevices: db query found device(s)");
+                cursor.moveToFirst();
 
-            //Loop over all instances
-            do {
-                Device device = new Device(
-                        cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ID)),
-                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_NAME)),
-                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)),
-                        cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ACTIVE)),
-                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_APPNAME))
-                );
-                devices.add(device);
-            } while (cursor.moveToNext());
+                //Loop over all instances
+                do {
+                    Device device = new Device(
+                            cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ID)),
+                            cursor.getString(cursor.getColumnIndex(Device.COLUMN_NAME)),
+                            cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)),
+                            cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ACTIVE)),
+                            cursor.getString(cursor.getColumnIndex(Device.COLUMN_APPNAME))
+                    );
+                    devices.add(device);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
         }
-        cursor.close();
         return devices;
     }
 }

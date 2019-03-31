@@ -27,13 +27,13 @@ import com.bme.solon.database.Device;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Initial loading screen. Performs all necessary startup tasks.
  */
 public class SplashActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
+    private static final int PERMISSION_REQUEST_VIBRATE = 2;
     private static final String TAG = "SplashActivity";
 
     private ServiceConnection btServiceConnection;
@@ -45,7 +45,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private List<AsyncTask> tasks = new ArrayList<>();
     private boolean doBluetoothTask;
-    private GetPermissionsAsync permissionTask;
+    private GetPermissionsAsync permissionLocationTask;
 
     /**
      * Initializes singleton variables.
@@ -63,19 +63,31 @@ public class SplashActivity extends AppCompatActivity {
 
         db = DatabaseHelper.getInstance(this);
 
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
+        // Create the NotificationChannel, but only on API 26+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = getString(R.string.channel_name);
-            String description = getString(R.string.channel_description);
+            //Service Channel
+            CharSequence name = getString(R.string.channel_service_name);
+            String description = getString(R.string.channel_service_description);
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            NotificationChannel channel = new NotificationChannel(BluetoothService.NOTIFICATION_CHANNEL, name, importance);
+            NotificationChannel channel = new NotificationChannel(BluetoothService.NOTIFICATION_SERVICE_CHANNEL, name, importance);
             channel.setDescription(description);
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
+
+            //Register service channel
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
-            Log.d(TAG, "onCreate: started notification channel");
+            Log.d(TAG, "onCreate: started service notification channel");
+
+            //Instance channel
+            name = getString(R.string.channel_instance_name);
+            description = getString(R.string.channel_instance_description);
+            importance = NotificationManager.IMPORTANCE_MAX;
+            channel = new NotificationChannel(BluetoothService.NOTIFICATION_INSTANCE_CHANNEL, name, importance);
+            channel.setDescription(description);
+            channel.enableLights(true);
+            channel.enableVibration(true);
+
+            notificationManager.createNotificationChannel(channel);
+            Log.d(TAG, "onCreate: started instance notification channel");
         }
     }
 
@@ -195,22 +207,28 @@ public class SplashActivity extends AppCompatActivity {
      * Callback is onRequestPermissionsResult()
      */
     private void getPermissionsTask() {
+        //Android M Permission check 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            //Android M Permission check 
+            Log.v(TAG, "getPermissionsTask: Android version is M+");
+
+            //Location for Bluetooth scan
             if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.i(TAG, "getPermissionsTask: requesting location");
+
                 //Info Dialog
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle(R.string.splash_permission_info_title)
-                        .setMessage(R.string.splash_permission_info_message)
+                        .setMessage(R.string.splash_permission_location_message)
                         .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
                             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
                         })
                         .create().show();
 
-                permissionTask = new GetPermissionsAsync();
-                tasks.add(permissionTask);
+                permissionLocationTask = new GetPermissionsAsync();
+                tasks.add(permissionLocationTask);
             }
         }
+        Log.d(TAG,"getPermissionsTask: complete");
     }
 
     /**
@@ -223,11 +241,11 @@ public class SplashActivity extends AppCompatActivity {
         switch (requestCode) {
             case PERMISSION_REQUEST_COARSE_LOCATION: {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "Coarse location permission granted");
+                    Log.d(TAG, "onRequestPermissionsResult: Coarse location permission granted");
                 } else {
                     Toast.makeText(this, R.string.splash_permission_disabled_toast, Toast.LENGTH_SHORT).show();
                 }
-                permissionTask.cancel(true);
+                permissionLocationTask.cancel(true);
                 break;
             }
         }
@@ -240,8 +258,8 @@ public class SplashActivity extends AppCompatActivity {
     private void bluetoothTask() {
         if (isServiceBound) {
             Log.d(TAG, "bluetoothTask: service is bound, querying database");
-            Map<String, String> activeDevice = db.getActiveDevice();
-            if (!activeDevice.isEmpty()) {
+            Device activeDevice = db.getActiveDevice();
+            if (activeDevice != null) {
                 Log.d(TAG, "bluetoothTask: calling connectToDevice() with " + activeDevice.toString());
                 btService.connectToDevice(activeDevice);
             }
