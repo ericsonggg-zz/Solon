@@ -1,26 +1,29 @@
 package com.bme.solon;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.bme.solon.bluetooth.BluetoothManager;
+import com.bme.solon.bluetooth.BluetoothService;
 import com.bme.solon.bluetooth.BluetoothUnsupportedException;
-import com.bme.solon.bluetooth.ConnectAsync;
 import com.bme.solon.database.DatabaseHelper;
-import com.bme.solon.database.Device;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +35,10 @@ public class SplashActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     private static final String TAG = "SplashActivity";
 
+    private ServiceConnection btServiceConnection;
+    private boolean isServiceBound;
+    private BluetoothService btService;
+
     private DatabaseHelper db;
     private BluetoothManager btManager;
 
@@ -41,15 +48,75 @@ public class SplashActivity extends AppCompatActivity {
 
     /**
      * Initializes singleton variables.
-     * If Bluetooth is unsupported, notifies user and quits app.
-     * If Bluetooth is off, prompts user to turn it on.
+     * Create notification channel for Anroid Oreo and higher.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+        Log.d(TAG, "onCreate");
+
+        //Start the service
+        Intent intent = new Intent(this, BluetoothService.class);
+        startService(intent);
 
         db = DatabaseHelper.getInstance(this);
+
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(BluetoothService.NOTIFICATION_CHANNEL, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+            Log.d(TAG, "onCreate: started notification channel");
+        }
+    }
+
+    /**
+     * Bind to {@link BluetoothService}.
+     * If Bluetooth is unsupported, notifies user and quits app.
+     * If Bluetooth is off, prompts user to turn it on.
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart");
+
+        //service bound listener
+        btServiceConnection = new ServiceConnection() {
+            /**
+             * On connection (via bindService()).
+             * @param iBinder       {@link BluetoothService.Binder}
+             */
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                Log.d(TAG, "onServiceConnected: " + componentName.flattenToString());
+                BluetoothService.Binder binder = (BluetoothService.Binder) iBinder;
+                btService = binder.getService();
+                isServiceBound = true;
+            }
+
+            /**
+             * On crash or disconnect
+             * TODO: auto-reconnect
+             */
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+                Log.d(TAG, "onServiceDisconnected: " + componentName.flattenToString());
+                btService = null;
+                isServiceBound = false;
+            }
+        };
+
+        //bind to service
+        Intent intent = new Intent(this, BluetoothService.class);
+        bindService(intent, btServiceConnection, Context.BIND_AUTO_CREATE);
 
         //Turn on bluetooth if supported by phone
         try {
@@ -74,6 +141,24 @@ public class SplashActivity extends AppCompatActivity {
                         }
                     });
             builder.create().show();
+
+            Log.e(TAG, "onStart: phone does not support Bluetooth");
+        }
+    }
+
+    /**
+     * Unbind the service
+     */
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop");
+
+        if (isServiceBound) {
+            Log.d(TAG, "onStop: unbinding service");
+            unbindService(btServiceConnection);
+            btService = null;
+            isServiceBound = false;
         }
     }
 
@@ -89,15 +174,42 @@ public class SplashActivity extends AppCompatActivity {
                                     Intent data) {
         if (requestCode == BluetoothManager.REQUEST_ENABLE_BT) {
             if (resultCode != RESULT_OK) {
+                Log.d(TAG, "onActivityResult: Bluetooth enable request denied");
                 Toast.makeText(this, R.string.splash_bluetooth_disabled_toast, Toast.LENGTH_SHORT).show();
                 doBluetoothTask = false;
+            }
+            else {
+                Log.d(TAG, "onActivityResult: Bluetooth enable request approved");
+                doBluetoothTask = true;
             }
         }
         else {
             super.onActivityResult(requestCode, resultCode, data);
-            doBluetoothTask = true;
         }
        startupTasks();
+    }
+
+    /**
+     * Manually get permissions for Android M or higher.
+     * Callback is onRequestPermissionsResult()
+     */
+    private void getPermissionsTask() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //Android M Permission check 
+            if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                //Info Dialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.splash_permission_info_title)
+                        .setMessage(R.string.splash_permission_info_message)
+                        .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
+                            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+                        })
+                        .create().show();
+
+                permissionTask = new GetPermissionsAsync();
+                tasks.add(permissionTask);
+            }
+        }
     }
 
     /**
@@ -120,59 +232,36 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
-    private void getPermissionsTask() {
-        //Manually get permissions for Version M or higher
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            //Android M Permission check 
-            if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                //Info Dialog
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(R.string.splash_permission_info_title)
-                        .setMessage(R.string.splash_permission_info_message)
-                        .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
-                            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
-                        })
-                        .create().show();
-
-                permissionTask = new GetPermissionsAsync();
-                tasks.add(permissionTask);
-            }
-        }
-    }
-
     /**
-     * Run startup Bluetooth task.
+     * Run startup Bluetooth task if bound to service
      * Try to connect to "active" device, if exists.
      */
     private void bluetoothTask() {
-        Map<String, String> activeDevice = db.getActiveDevice();
-        if (!activeDevice.isEmpty()) {
-            BluetoothDevice device = btManager.queryPaired(activeDevice.get(Device.COLUMN_NAME), activeDevice.get(Device.COLUMN_ADDRESS));
-
-            try {
-                ConnectAsync connectTask = btManager.connectToDevice(device);
-                tasks.add(connectTask);
-                connectTask.execute(this);
-            }
-            catch (IOException e) {
-                Log.e(TAG,"onActivityResult: error connecting to device: " + e.toString());
+        if (isServiceBound) {
+            Log.d(TAG, "bluetoothTask: service is bound, querying database");
+            Map<String, String> activeDevice = db.getActiveDevice();
+            if (!activeDevice.isEmpty()) {
+                Log.d(TAG, "bluetoothTask: calling connectToDevice() with " + activeDevice.toString());
+                btService.connectToDevice(activeDevice);
             }
         }
+        Log.d(TAG, "bluetoothTask: complete");
+        //TODO: fix this because it happens too soon/fast
     }
 
     /**
      * Runs all startup tasks.
      */
     private void startupTasks() {
+        Log.d(TAG,"executing all startupTasks");
+        //TODO: add all remaining AsyncTasks
+        getPermissionsTask();
+
         if (doBluetoothTask) {
             bluetoothTask();
         }
 
-        //TODO: add all remaining AsyncTasks
-        getPermissionsTask();
-
         ChangeActivityAsync finalTask = new ChangeActivityAsync(this, tasks);
         finalTask.execute();
-        Log.d(TAG,"done");
     }
 }

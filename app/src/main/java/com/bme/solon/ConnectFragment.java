@@ -1,15 +1,11 @@
 package com.bme.solon;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
-import android.bluetooth.le.ScanSettings;
 import android.os.Bundle;
-import android.os.ParcelUuid;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,21 +16,17 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.bme.solon.bluetooth.BluetoothManager;
-import com.bme.solon.bluetooth.DeviceListAdapter;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class ConnectFragment extends Fragment {
+public class ConnectFragment extends MainFragment {
     private static final String TAG = "ConnectFragment";
 
     private BluetoothManager bluetoothManager;
     private RecyclerView pairList;
-    private DeviceListAdapter pairAdapter;
+    private ScanListAdapter pairAdapter;
     private RecyclerView.LayoutManager pairLayoutManager;
 
     private AlertDialog scanDialog;
-    private ScanCallback scanCallback;  //need to start & stop scan
+    private ScanCallback scanCallback;  //need to start & stop scan, never null after discoverBluetooth() is called the first time
 
     /**
      * Required empty constructor
@@ -42,13 +34,9 @@ public class ConnectFragment extends Fragment {
     public ConnectFragment() {}
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView");
         // Inflate the layout for this fragment
         View fragmentView = inflater.inflate(R.layout.fragment_connect, container, false);
 
@@ -64,8 +52,17 @@ public class ConnectFragment extends Fragment {
                 .setCancelable(true)
                 .setOnCancelListener((arg0) -> {
                     scanDialog.dismiss();
-                    bluetoothManager.getAdapter().getBluetoothLeScanner().stopScan(scanCallback);
-                    Log.d(TAG, "scanDialog: stopped LE scan");
+                    if (isServiceBound) {
+                        Log.d(TAG, "scanDialog: stopping LE scan due to cancel");
+                        btService.stopDiscovery(scanCallback);
+                    }
+                })
+                .setOnDismissListener((arg0) -> {
+                    scanDialog.dismiss();
+                    if (isServiceBound) {
+                        Log.d(TAG, "scanDialog: stopping LE scan due to dismiss");
+                        btService.stopDiscovery(scanCallback);
+                    }
                 })
                 .create();
 
@@ -102,7 +99,14 @@ public class ConnectFragment extends Fragment {
     }
 
     private void discoverBluetooth(View view) {
-        if(!bluetoothManager.isBluetoothOn()) {
+        if (!isServiceBound) {
+            Log.e(TAG, "discoverBluetooth: service is unbound when it should be bound");
+            Toast.makeText(getActivity(), R.string.something_went_wrong, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if(!btService.isBluetoothOn()) {
+            Log.d(TAG, "discoverBluetooth: bluetooth is off, not starting discovery");
             Toast.makeText(getActivity(), R.string.bluetooth_is_off, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -113,28 +117,30 @@ public class ConnectFragment extends Fragment {
         RecyclerView scanDialogView = scanDialog.findViewById(R.id.connect_scan_view);
         scanDialogView.setHasFixedSize(true);
         scanDialogView.setLayoutManager(new LinearLayoutManager(scanDialog.getContext()));
-        DeviceListAdapter scanAdapter = new DeviceListAdapter(scanDialog);
+        ScanListAdapter scanAdapter = new ScanListAdapter(scanDialog, btService);
         scanDialogView.setAdapter(scanAdapter);
 
         scanCallback = new ScanCallback() {
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
-                getActivity().runOnUiThread(() -> {
-                    //Manually filter since auto-filtering doesn't work on Galaxy S7Edge
-                    ScanFilter filter = new ScanFilter.Builder().setServiceUuid(BluetoothManager.HARDWARE_UUID).build();
-                    Log.d(TAG, "discoverBluetooth: scan found result - "+result.getDevice().getName() + " ! " + filter.matches(result));
+                Log.d(TAG, "discoverBluetooth: onScanResult");
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        //Manually filter since auto-filtering doesn't work on Galaxy S7Edge
+                        ScanFilter filter = new ScanFilter.Builder().setServiceUuid(BluetoothManager.HARDWARE_UUID).build();
+                        Log.d(TAG, "discoverBluetooth: scan found result - " + result.getDevice().getName() + " ! " + filter.matches(result));
 
-                    if (filter.matches(result)) {     //only show valid systems
-                        scanAdapter.addDevice(result.getDevice());
-                        scanAdapter.notifyDataSetChanged();
-                    }
-                });
+                        if (filter.matches(result)) {     //only show valid systems
+                            scanAdapter.addDevice(result.getDevice());
+                            scanAdapter.notifyDataSetChanged();
+                        }
+                    });
+                }
             }
         };
 
         //Start Bluetooth LE scan
-        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
-        bluetoothAdapter.getBluetoothLeScanner().startScan(null, new ScanSettings.Builder().build(), scanCallback);
+        btService.startDiscovery(scanCallback);
         Log.d(TAG, "discoverBluetooth: started LE scan");
     }
 }

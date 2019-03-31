@@ -6,10 +6,13 @@
     <string name="no">No</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
+    <string name="bluetooth_is_off">Bluetooth must be on for this function</string>
+    <string name="something_went_wrong">Something went wrong, please restart the app</string>
 
     <string name="bluno">Bluno</string>
+    <string name="channel_name">Solon Service</string>
+    <string name="channel_description">Solon bluetooth service</string>
 
-    <string name="bluetooth_is_off">Bluetooth must be on for this function</string>
 
     <string name="toolbar_action_home">Home</string>
     <string name="toolbar_action_connect">Connections</string>
