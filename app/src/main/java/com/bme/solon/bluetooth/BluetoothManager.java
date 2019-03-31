@@ -4,71 +4,24 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothProfile;
-import android.bluetooth.BluetoothSocket;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.os.ParcelUuid;
 import android.util.Log;
 
-import java.io.IOException;
 import java.util.Set;
 
 public class BluetoothManager {
     public static final int REQUEST_ENABLE_BT = 10000; //Const for enable bluetooth intent
     public static final ParcelUuid HARDWARE_UUID = ParcelUuid.fromString("0000dfb0-0000-1000-8000-00805f9b34fb");
 
+
     private static final String TAG = "BluetoothManager";
 
     private static BluetoothManager singleton;
     private BluetoothAdapter bluetoothAdapter;
-
-    private BluetoothGatt gatt;
-    private int gattStatus;
-
-    private BluetoothGattCallback bluetoothCallback =  new BluetoothGattCallback() {
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            Log.d(TAG, "onConnectionStateChange: newState=" + newState);
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                gatt.discoverServices();
-            }
-            gattStatus = newState;
-        }
-
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            Log.d(TAG, "onServicesDiscovered");
-            for (BluetoothGattService service : gatt.getServices()) {
-                Log.d(TAG, "ohno " +service.getUuid().toString());
-                for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-                    Log.d(TAG,"chr " + characteristic.getUuid().toString());
-                    if (characteristic.getUuid().toString().equals("0000dfb1-0000-1000-8000-00805f9b34fb")){
-                        Log.d(TAG, "set");
-                        gatt.setCharacteristicNotification(characteristic, true);
-                        gatt.readCharacteristic(characteristic);
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.d(TAG, "onCharacteristicRead");
-            super.onCharacteristicRead(gatt, characteristic, status);
-            Log.d(TAG, new String (characteristic.getValue()));
-        }
-
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            Log.d(TAG, "onCharacteristicChanged");
-            super.onCharacteristicChanged(gatt, characteristic);
-            Log.d(TAG, new String (characteristic.getValue()));
-        }
-    };
+    private BluetoothGatt gattClient;
     
     /**
      * Private constructor
@@ -152,13 +105,14 @@ public class BluetoothManager {
 
     /**
      * Starts auto connection to Bluetooth device via GATT.
-     * @param device        Device to connect to
-     * @param context       Calling context
+     * @param device            Device to connect to
+     * @param context           Calling context
+     * @param bluetoothCallback Callback listener
      */
-    void connectToDevice(BluetoothDevice device, Context context) {
+    void connectToDevice(BluetoothDevice device, Context context, BluetoothGattCallback bluetoothCallback) {
         Log.d(TAG, "connectToDevice: " + device.getName() + " with address " + device.getAddress() + " from context " + context.toString());
         synchronized (this) {
-            gatt = device.connectGatt(context, true, bluetoothCallback);
+            gattClient = device.connectGatt(context, true, bluetoothCallback);
         }
     }
 

@@ -4,6 +4,11 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanCallback;
 import android.content.Intent;
 import android.os.HandlerThread;
@@ -24,6 +29,9 @@ public class BluetoothService extends Service {
     public static final String THREAD_NAME = "BluetoothService";
     public static final String NOTIFICATION_CHANNEL = "SolonService";
     public static final int NOTIFICATION_ID = 39573;
+    public static final String HARDWARE_SERIAL_UUID = "0000dfb1-0000-1000-8000-00805f9b34fb";
+    public static final String HARDWARE_COMMAND_UUID = "0000dfb2-0000-1000-8000-00805f9b34fb";
+    public static final String HARDWARE_MODEL_NUMBER_UUID = "00002a24-0000-1000-8000-00805f9b34fb";
     public static final String TAG = "BluetoothService";
 
     private Looper looper;
@@ -31,6 +39,116 @@ public class BluetoothService extends Service {
     private IBinder binder = new Binder();
 
     private BluetoothManager btManager;
+
+    private int gattStatus; //BluetoothProfile.STATE_###
+    private BluetoothGattCharacteristic serialChar;
+    private BluetoothGattCharacteristic commandChar;
+    private BluetoothGattCharacteristic modelChar;
+
+    /**
+     * Callback listener for an active connection.
+     */
+    private BluetoothGattCallback bluetoothCallback =  new BluetoothGattCallback() {
+
+        /**
+         * Start discovering services if connected.
+         * @param gatt      GATT client
+         * @param status    Status of operation
+         * @param newState  New state
+         */
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            Log.d(TAG, "onConnectionStateChange: newState = " + newState);
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                gatt.discoverServices();
+            }
+            gattStatus = newState;
+        }
+
+        /**
+         * Store all appropriate characteristics on success.
+         * If failed, retry service discovery.
+         * @param gatt      GATT client
+         * @param status    GATT_SUCCESS if device was successfully explored.
+         */
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            Log.d(TAG, "onServicesDiscovered: status = " + status);
+
+            if (status == BluetoothGatt.GATT_FAILURE) {
+                Log.w(TAG, "onServicesDiscovered: retrying discovery");
+                gatt.discoverServices();
+            }
+            else {
+                for (BluetoothGattService service : gatt.getServices()) {
+                    Log.v(TAG, "onServicesDiscovered: service uuid = " + service.getUuid().toString());
+                    for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
+                        Log.v(TAG, "onServicesDiscovered: characteristic uuid = " + characteristic.getUuid().toString());
+                        switch (characteristic.getUuid().toString()) {
+                            case HARDWARE_SERIAL_UUID:
+                                Log.v(TAG, "onServicesDiscovered: found Serial Port characteristic");
+                                serialChar = characteristic;
+                                break;
+                            case HARDWARE_COMMAND_UUID:
+                                Log.v(TAG, "onServicesDiscovered: found Command characteristic");
+                                commandChar = characteristic;
+                                break;
+                            case HARDWARE_MODEL_NUMBER_UUID:
+                                Log.v(TAG, "onServicesDiscovered: found Model Number characteristic");
+                                modelChar = characteristic;
+                                break;
+                        }
+                    }
+                }
+
+                if (serialChar != null) {
+                    Log.d(TAG, "onServicesDiscovered: enabling Serial Port notification channel");
+                    gatt.setCharacteristicNotification(serialChar, true);
+                    gatt.readCharacteristic(serialChar);
+                }
+                else {
+                    Log.w(TAG, "onServicesDiscovered: no service had a Serial Port characteristic, disconnecting");
+                    //TODO: disconnect
+
+                    serialChar = null;
+                    commandChar = null;
+                    modelChar = null;
+                }
+            }
+        }
+
+        /**
+         * Read loaded messages from the device. If operation failed, retry.
+         * @param gatt              GATT client
+         * @param characteristic    Characteristic to be read
+         * @param status            GATT_SUCCESS if read operation was done properly
+         */
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicRead(gatt, characteristic, status);
+            Log.d(TAG, "onCharacteristicRead: status = " + status);
+
+            if (status == BluetoothGatt.GATT_FAILURE) {
+                Log.w(TAG, "onCharacteristicRead: retrying read");
+                gatt.readCharacteristic(serialChar);
+            }
+            else {
+                processCharacteristic(characteristic.getValue());
+            }
+        }
+
+        /**
+         * Read changed message from the device.
+         * @param gatt              GATT client
+         * @param characteristic    Characteristic to be read
+         */
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            super.onCharacteristicChanged(gatt, characteristic);
+            Log.d(TAG, "onCharacteristicChanged");
+            processCharacteristic(characteristic.getValue());
+        }
+    };
 
     /**
      * Thread handler to post Runnables or Messages.
@@ -152,7 +270,7 @@ public class BluetoothService extends Service {
         handler.post(() -> {
             Log.d(TAG, "connectToDevice: running task with Map " + deviceData.toString());
             BluetoothDevice device = btManager.queryPaired(deviceData.get(Device.COLUMN_NAME), deviceData.get(Device.COLUMN_ADDRESS));
-            btManager.connectToDevice(device, this);
+            btManager.connectToDevice(device, this, bluetoothCallback);
         });
     }
 
@@ -164,7 +282,16 @@ public class BluetoothService extends Service {
         Log.d(TAG, "connectToDevice: posting task with BluetoothDevice " + device.toString());
         handler.post(() -> {
             Log.d(TAG, "connectToDevice: running task with BluetoothDevice " + device.toString());
-            btManager.connectToDevice(device, this);
+            btManager.connectToDevice(device, this, bluetoothCallback);
         });
+    }
+
+    /**
+     * Parse characteristic value into a {@link com.bme.solon.strip.StripStatus} and submit into the database.
+     * Alert all UI elements with a broadcast.
+     * @param value     Characteristic value.
+     */
+    private void processCharacteristic(byte[] value) {
+
     }
 }
