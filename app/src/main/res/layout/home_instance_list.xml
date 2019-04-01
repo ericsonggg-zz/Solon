@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/home_instance_resolution"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/home_instance_default_resolution"
+        android:textAppearance="@android:style/TextAppearance.Material.Large"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.tomerrosenfeld.customanalogclockview.CustomAnalogClock
+        android:id="@+id/home_instance_analog_clock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:default_watchface="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/home_instance_resolution" />
+
+    <TextView
+        android:id="@+id/home_instance_device"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/home_instance_default_device"
+        app:layout_constraintBottom_toTopOf="@+id/home_instance_digital_clock"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/home_instance_resolution" />
+
+    <TextView
+        android:id="@+id/home_instance_digital_clock"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/home_instance_default_time"
+        app:layout_constraintBottom_toTopOf="@+id/home_instance_date"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/home_instance_analog_clock"
+        app:layout_constraintTop_toBottomOf="@+id/home_instance_device" />
+
+    <TextView
+        android:id="@+id/home_instance_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/home_instance_default_date"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+</android.support.constraint.ConstraintLayout>
