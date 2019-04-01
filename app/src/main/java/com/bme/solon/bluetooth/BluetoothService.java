@@ -268,7 +268,7 @@ public class BluetoothService extends Service {
         serviceNotification = new NotificationCompat.Builder(this, NOTIFICATION_SERVICE_CHANNEL)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 //.setContentTitle(getText(R.string.app_name))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);       //TODO: add ticker & proper notification
+                .setPriority(NotificationCompat.PRIORITY_LOW);
         serviceNotification.setContentTitle(getString(btManager.isBluetoothOn() ? R.string.notif_service_disconnected : R.string.notif_service_bluetooth_off));
         startForeground(NOTIFICATION_SERVICE_ID, serviceNotification.build());
 
@@ -478,6 +478,7 @@ public class BluetoothService extends Service {
                     Log.i(TAG, "processCharacteristic: new strip has been placed");
                     statusResetCounter = 0;
                     currentStatus = status;
+                    currentInstance.setResolution(Instance.RESOLVED);
                     currentInstance.setResolutionTime();
                     db.updateInstance(currentInstance);
                     currentInstance = null;

@@ -23,10 +23,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private SQLiteDatabase writeDb;
 
     // Database Version
-    private static final int DATABASE_VERSION = 10;
+    private static final int DATABASE_VERSION = 1;
 
     // Database Name
-    private static final String DATABASE_NAME = "Instance_db";
+    private static final String DATABASE_NAME = "Solon_db";
 
     /**
      * Private constructor

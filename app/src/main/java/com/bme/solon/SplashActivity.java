@@ -71,6 +71,7 @@ public class SplashActivity extends AppCompatActivity {
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(BluetoothService.NOTIFICATION_SERVICE_CHANNEL, name, importance);
             channel.setDescription(description);
+            channel.setSound(null, null); //disable sound
 
             //Register service channel
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
