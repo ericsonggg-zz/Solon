@@ -7,13 +7,11 @@
     tools:context=".HomeFragment">
 
     <TextView
+        android:id="@+id/home_version"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="HOME FRAGMENT"
-        android:textAppearance="@android:style/TextAppearance.Material.Large"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        app:layout_constraintEnd_toEndOf="parent" />
 </android.support.constraint.ConstraintLayout>

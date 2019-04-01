@@ -45,6 +45,8 @@
     <string name="splash_progress_connect_successful">The connection was successful!</string>
     <string name="splash_progress_connect_unsuccessful">The connection failed.</string>
 
+    <string name="home_version">Version: %1$s</string>
+
     <string name="connect_power_title">Solon requires Bluetooth</string>
     <string name="connect_power_connected_message">There is an active connection. Do you still want to disconnect?</string>
     <string name="connect_power_disconnected_message">Are you sure you want to disconnect?</string>
