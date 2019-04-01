@@ -4,37 +4,33 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingRight="@dimen/activity_horizontal_margin"
     tools:context=".HomeFragment">
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/home_instance_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp">
 
         <TextView
             android:id="@+id/home_instance_resolution"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-condensed-light"
             android:text="Unresolved"
             android:textAppearance="@android:style/TextAppearance.Material.Large"
-            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.tomerrosenfeld.customanalogclockview.CustomAnalogClock
             android:id="@+id/home_instance_analog_clock"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="141dp"
+            android:layout_height="157dp"
             app:default_watchface="true"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/home_instance_resolution" />
+            tools:layout_editor_absoluteY="70dp" />
 
         <TextView
             android:id="@+id/home_instance_device"
@@ -47,11 +43,11 @@
 
         <TextView
             android:id="@+id/home_instance_digital_clock"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="August 14th"
             app:layout_constraintBottom_toTopOf="@+id/home_instance_date"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/home_instance_analog_clock"
             app:layout_constraintTop_toBottomOf="@+id/home_instance_device" />
 
         <TextView
@@ -68,9 +64,7 @@
         android:id="@+id/home_version"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        tools:layout_editor_absoluteX="403dp"
+        tools:layout_editor_absoluteY="704dp" />
 
 </android.support.constraint.ConstraintLayout>
