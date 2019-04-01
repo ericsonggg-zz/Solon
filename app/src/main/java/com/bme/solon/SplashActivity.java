@@ -260,13 +260,13 @@ public class SplashActivity extends AppCompatActivity {
         //TODO: remove cause testing
         //addDevices();
         //killService();
+        //db.wipeData();
 
         ChangeActivityAsync finalTask = new ChangeActivityAsync(this, tasks);
         finalTask.execute();
     }
 
     private void addDevices() {
-        //db.wipeData();
         db.addActiveDevice(new Device("TEST1", "00:11:22:33:FF:ED"));
         db.addActiveDevice(new Device("TEST2", "00:11:22:33:FF:EE"));
         db.addActiveDevice(new Device("TEST3", "00:11:22:33:FF:EF"));

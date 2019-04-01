@@ -260,7 +260,7 @@ public class BluetoothService extends Service {
 
         //start foreground
         serviceNotification = new NotificationCompat.Builder(this, NOTIFICATION_SERVICE_CHANNEL)
-                .setSmallIcon(R.mipmap.logo_round)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 //.setContentTitle(getText(R.string.app_name))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);       //TODO: add ticker & proper notification
         serviceNotification.setContentTitle(getString(btManager.isBluetoothOn() ? R.string.notif_service_disconnected : R.string.notif_service_bluetooth_off));
@@ -464,7 +464,7 @@ public class BluetoothService extends Service {
         PendingIntent snoozePdIntent = PendingIntent.getBroadcast(this, 0, snoozeIntent, 0);
 
         Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_INSTANCE_CHANNEL)
-                .setSmallIcon(R.mipmap.logo_round)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(getString(R.string.notif_incontinence_title))
 //                .setContentText(String.format(getString(R.string.notif_incontinence_message), device.getAppName()))
                 .setContentText(String.format(getString(R.string.notif_incontinence_message), "TEST_NAME"))
