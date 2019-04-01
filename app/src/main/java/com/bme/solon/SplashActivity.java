@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -17,6 +18,7 @@ import android.os.IBinder;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bme.solon.bluetooth.BluetoothManager;
@@ -92,6 +94,13 @@ public class SplashActivity extends AppCompatActivity {
             notificationManager.createNotificationChannel(channel);
             Log.d(TAG, "onCreate: started instance notification channel");
         }
+
+        //Set version name
+        try {
+            PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            TextView version = findViewById(R.id.splash_version);
+            version.setText(String.format(getString(R.string.splash_version), pinfo.versionName));
+        } catch (PackageManager.NameNotFoundException | NullPointerException ignored) {}
     }
 
     /**
