@@ -13,6 +13,7 @@ import android.util.Log;
 import com.bme.solon.bluetooth.BluetoothBroadcast;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,7 +29,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private SQLiteDatabase writeDb;
 
     // Database Version
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
     // Database Name
     private static final String DATABASE_NAME = "Instance_db";
@@ -49,9 +50,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * @return          The singleton instance
      */
     public static DatabaseHelper getInstance(Context context) {
-        Log.v(TAG, "getInstance");
+        Log.v(TAG, "getDatabaseHelperInstance");
         if (singleton == null) {
-            Log.v(TAG,"getInstance: creating new instance");
+            Log.v(TAG,"getDatabaseHelperInstance: creating new instance");
             singleton = new DatabaseHelper(context.getApplicationContext());
         }
         return singleton;
@@ -91,13 +92,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public long addInstance(int severity) {
-        SQLiteDatabase db = this.getWritableDatabase();
+    /**
+     * Add an instance to the database.
+     * @param instance  Instance to add
+     * @return          Database ID
+     */
+    public long addInstance(Instance instance) {
+        Log.v(TAG, "addInstance: " + instance.toString());
         ContentValues values = new ContentValues();
-        values.put(Instance.COLUMN_SEVERITY, severity);
-        long id = db.insert(Instance.TABLE_NAME, null, values);
-        db.close();
-        return id;
+        values.put(Instance.COLUMN_SEVERITY, instance.getSeverity());
+        values.put(Instance.COLUMN_STATUS, instance.getStatus());
+        values.put(Instance.COLUMN_TIME, instance.getDateTimeAsString());
+        values.put(Instance.COLUMN_DEVICE_ID, instance.getDeviceId());
+
+        return writeDb.insert(Instance.TABLE_NAME, null, values);
     }
 
     public Instance retrieveInstance(long id) {
@@ -113,13 +121,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             cursor.moveToFirst();
 
         Instance instance = new Instance(
-            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
-            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
-            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)),
-            cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME))
-        );
+                cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
+                cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
+                cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)),
+                cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)),
+                cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
+
         // close the cursor
         cursor.close();
+        return instance;
+    }
+
+    public Instance getLatestInstance() {
+        Log.d(TAG,"getLatestInstance");
+        Instance instance = null;
+
+        Cursor cursor = readDb.query(Instance.TABLE_NAME,
+                null,null,null,null, null,
+                Instance.COLUMN_ID + " DESC", "1");
+
+        if (cursor != null) {
+            if (cursor.getCount() > 0) {
+                Log.d(TAG, "getLatestInstance: db query found device");
+                cursor.moveToFirst();
+                instance = new Instance(
+                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
+                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
+                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)),
+                        cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)),
+                        cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
+            }
+            cursor.close();
+        }
         return instance;
     }
 
@@ -140,8 +173,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
                         cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
                         cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)),
-                        cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME))
-                );
+                        cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)),
+                        cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
                 instances.add(instance);
             } while (cursor.moveToNext());
         }
@@ -185,8 +218,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
                         cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
                         cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)),
-                        cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME))
-                );
+                        cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)),
+                        cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
                 instances.add(instance);
             } while (cursor.moveToNext());
         }
@@ -278,6 +311,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Query database for a specific device
+     * @param id        Device table id
+     * @return          Device if found, otherwise null
+     */
+    public Device getDevice(long id) {
+        Log.v(TAG, "getDevice: id=" + id);
+        Device device = null;
+
+        Cursor cursor = readDb.query(Device.TABLE_NAME,
+                null,
+                Device.COLUMN_ID + "=?",
+                new String[] {Long.toString(id)},
+                null, null, null, null);
+
+        if (cursor != null) {
+            if (cursor.getCount() > 0) {
+                Log.d(TAG, "getDevice: device found");
+                cursor.moveToFirst();
+                device = new Device(
+                        cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ID)),
+                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_NAME)),
+                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)),
+                        cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ACTIVE)),
+                        cursor.getString(cursor.getColumnIndex(Device.COLUMN_APPNAME))
+                );
+            }
+            cursor.close();
+        }
+        return device;
+    }
+
+    /**
+     * Query database for a specific device
      * @param name      Bluetooth name
      * @param address   Bluetooth address
      * @return          Device if found, otherwise null
@@ -362,8 +427,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                             cursor.getString(cursor.getColumnIndex(Device.COLUMN_NAME)),
                             cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)),
                             cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ACTIVE)),
-                            cursor.getString(cursor.getColumnIndex(Device.COLUMN_APPNAME))
-                    );
+                            cursor.getString(cursor.getColumnIndex(Device.COLUMN_APPNAME)));
                     devices.add(device);
                 } while (cursor.moveToNext());
             }
@@ -387,16 +451,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     public void dumpDatabase() {
         Log.v(TAG, "dumpDatabase");
-        Cursor cursor = readDb.query(Device.TABLE_NAME,
+
+        //Instances
+        Cursor cursor = readDb.query(Instance.TABLE_NAME,
                 null, null, null, null, null, null, null);
 
         if (cursor != null) {
             if (cursor.getCount() > 0) {
                 cursor.moveToFirst();
-                Log.v(TAG, "dumpDatabase: columns: " + cursor.getColumnNames().toString());
-
                 do {
-                    Log.v(TAG, "dumpDatabase: entry: " +
+                    Log.v(TAG, "dumpDatabase: instance entry: " +
+                            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)) + " " +
+                            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)) + " " +
+                            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)) + " " +
+                            cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)) + " " +
+                            cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+
+        //Devices
+        cursor = readDb.query(Device.TABLE_NAME,
+                null, null, null, null, null, null, null);
+
+        if (cursor != null) {
+            if (cursor.getCount() > 0) {
+                cursor.moveToFirst();
+                do {
+                    Log.v(TAG, "dumpDatabase: device entry: " +
                             cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ID)) + " " +
                             cursor.getString(cursor.getColumnIndex(Device.COLUMN_NAME)) + " " +
                             cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)) + " " +
@@ -404,6 +487,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                             cursor.getString(cursor.getColumnIndex(Device.COLUMN_APPNAME)));
                 } while (cursor.moveToNext());
             }
+            cursor.close();
         }
     }
 }

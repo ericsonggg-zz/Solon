@@ -24,6 +24,7 @@ import com.bme.solon.bluetooth.BluetoothService;
 import com.bme.solon.bluetooth.BluetoothUnsupportedException;
 import com.bme.solon.database.DatabaseHelper;
 import com.bme.solon.database.Device;
+import com.bme.solon.database.Instance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -258,7 +259,8 @@ public class SplashActivity extends AppCompatActivity {
         getPermissionsTask();
 
         //TODO: remove cause testing
-        //addDevices();
+        addDevices();
+        //addInstances();
         //killService();
         //db.wipeData();
 
@@ -270,6 +272,10 @@ public class SplashActivity extends AppCompatActivity {
         db.addActiveDevice(new Device("TEST1", "00:11:22:33:FF:ED"));
         db.addActiveDevice(new Device("TEST2", "00:11:22:33:FF:EE"));
         db.addActiveDevice(new Device("TEST3", "00:11:22:33:FF:EF"));
+    }
+
+    private void addInstances() {
+        db.addInstance(new Instance(3, 1));
     }
 
     private void killService() {
