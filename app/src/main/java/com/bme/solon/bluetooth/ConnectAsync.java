@@ -1,18 +1,22 @@
 package com.bme.solon.bluetooth;
 
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.os.AsyncTask;
-import android.support.v7.app.AlertDialog;
+import android.widget.Toast;
+
+import com.bme.solon.R;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 /**
  * AsyncTask that tries to connect to the specified device in the socket.
  * Updates dialog on completion.
  */
-public class ConnectAsync extends AsyncTask<AlertDialog, Void, Boolean> {
+public class ConnectAsync extends AsyncTask<Context, Void, Boolean> {
     private BluetoothSocket socket;
-    private AlertDialog dialog;
+    private WeakReference<Context> context;
 
     /**
      * Class constructor
@@ -26,35 +30,34 @@ public class ConnectAsync extends AsyncTask<AlertDialog, Void, Boolean> {
      * Only try to connect the first socket in the list
      * @return      True if connect was successful
      */
-    protected Boolean doInBackground(AlertDialog... dialogs) {
-        if (dialogs.length > 0) {
-            this.dialog = dialogs[0];
+    @Override
+    protected Boolean doInBackground(Context... contexts) {
+        if (contexts.length > 0) {
+            this.context = new WeakReference<>(contexts[0]);
         }
-
         try {
             socket.connect();
-            return new Boolean(true);
+            return true;
         }
         catch (IOException exception) {
             try {
                 socket.close(); //close socket on failure
-            } catch (IOException ignored) {
-            }
+            } catch (IOException ignored) {}
         }
-        return new Boolean(false);
+        return false;
     }
 
     /**
-     * Update dialog message on completion.
+     * Update dialog message on completion, if exists.
      * @param connectStatus     Connection status from doInBackground()
      */
+    @Override
     protected void onPostExecute(Boolean connectStatus) {
-        if (dialog != null) {
+        if (context != null && context.get() != null) {
             if (connectStatus) {
-                dialog.setMessage("The connection was successful!");
-            }
-            else {
-                dialog.setMessage("The connection failed.");
+                Toast.makeText(context.get(), R.string.splash_progress_connect_successful, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(context.get(), R.string.splash_progress_connect_unsuccessful, Toast.LENGTH_SHORT).show();
             }
         }
     }
