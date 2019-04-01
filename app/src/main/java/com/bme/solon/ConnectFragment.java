@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.bme.solon.bluetooth.BluetoothBroadcast;
 import com.bme.solon.bluetooth.BluetoothManager;
 import com.bme.solon.database.DatabaseHelper;
+import com.bme.solon.database.Device;
 
 public class ConnectFragment extends MainFragment {
     private static final String TAG = "ConnectFragment";
@@ -111,7 +112,7 @@ public class ConnectFragment extends MainFragment {
                 toggleButtonTextView.setText(getText(R.string.on));
             }
             else {
-                BluetoothDevice device = btService.getConnectedDevice();
+                Device device = btService.getConnectedDevice();
                 toggleButtonTextView.setText(getText(R.string.off));
                 switch (btService.getGattStatus()) {
                     case BluetoothProfile.STATE_DISCONNECTED:
@@ -119,11 +120,11 @@ public class ConnectFragment extends MainFragment {
                         activeStatusView.setText(getText(R.string.status_disconnected));
                         break;
                     case BluetoothProfile.STATE_CONNECTING:
-                        activeNameView.setText(device.getName());
+                        activeNameView.setText(device.getAppName());
                         activeStatusView.setText(getText(R.string.status_connecting));
                         break;
                     case BluetoothProfile.STATE_CONNECTED:
-                        activeNameView.setText(device.getName());
+                        activeNameView.setText(device.getAppName());
                         activeStatusView.setText(getText(R.string.status_connected));
                         break;
                 }
@@ -166,6 +167,11 @@ public class ConnectFragment extends MainFragment {
                 activeNameView.setText(getText(R.string.status_disconnected_device));
                 activeStatusView.setText(getText(R.string.status_disconnected));
                 break;
+            case BluetoothBroadcast.ACTION_DEVICES_CHANGED:
+                DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
+                pairAdapter.resetDevices(db.getPairedDevices());
+                pairAdapter.notifyDataSetChanged();
+                break;
         }
     }
 
@@ -198,7 +204,6 @@ public class ConnectFragment extends MainFragment {
                 Log.v(TAG, "toggleBluetooth: prompt for live connection");
                 confirmOffDialog.setMessage(R.string.connect_power_connected_message);
             }
-
             confirmOffDialog.create().show();
         }
         else {

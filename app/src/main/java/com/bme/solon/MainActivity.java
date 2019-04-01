@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
     private MainFragment currentFragment;
 
     private ServiceConnection btServiceConnection;
-    private IntentFilter btServiceReceiverFilter;
     private BroadcastReceiver btServiceReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -111,14 +110,6 @@ public class MainActivity extends AppCompatActivity {
         currentFragmentNum = 0;
         currentFragment = new HomeFragment();
         fragmentManager.beginTransaction().add(R.id.main_fragment_view, currentFragment).commit();
-
-        //initialize intent filter for broadcasts
-        btServiceReceiverFilter = new IntentFilter();
-        btServiceReceiverFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-        btServiceReceiverFilter.addAction(BluetoothBroadcast.ACTION_CONNECTING);
-        btServiceReceiverFilter.addAction(BluetoothBroadcast.ACTION_CONNECTED);
-        btServiceReceiverFilter.addAction(BluetoothBroadcast.ACTION_CONNECTED_UPDATE);
-        btServiceReceiverFilter.addAction(BluetoothBroadcast.ACTION_DISCONNECTED);
     }
 
     /**
@@ -158,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
         bindService(intent, btServiceConnection, Context.BIND_AUTO_CREATE);
 
         //register broadcast receiver
-        registerReceiver(btServiceReceiver, btServiceReceiverFilter);
+        registerReceiver(btServiceReceiver, BluetoothBroadcast.getIntentFilter());
     }
 
     /**

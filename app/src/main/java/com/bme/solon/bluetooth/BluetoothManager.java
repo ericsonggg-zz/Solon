@@ -10,6 +10,8 @@ import android.content.Context;
 import android.os.ParcelUuid;
 import android.util.Log;
 
+import com.bme.solon.database.Device;
+
 import java.util.Set;
 
 public class BluetoothManager {
@@ -78,24 +80,20 @@ public class BluetoothManager {
     }
 
     /**
-     * Check if the specified device has previously been paired.
-     * @param deviceName        Name of Bluetooth device
-     * @param deviceAddress     MAC address of Bluetooth device
-     * @return      The paired device if exists. Otherwise, null.
+     * Returns a BluetoothDevice with the {@link Device}'s address.
+     * @param device    Device to transform
+     * @return          BluetoothDevice, or null if address is invalid
      */
-    BluetoothDevice queryPaired(String deviceName, String deviceAddress) {
-        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-
-        if (pairedDevices.size() > 0) {
-            // There are paired devices. Get the name and address of each paired device.
-            for (BluetoothDevice device : pairedDevices) {
-                if (device.getName().equals(deviceName) && device.getAddress().equals(deviceAddress)) {
-                    return device;
-                }
-            }
+    BluetoothDevice getDevice(Device device) {
+        Log.v(TAG, "getDevice");
+        if(BluetoothAdapter.checkBluetoothAddress(device.getAddress())) {
+            Log.v(TAG,"getDevice: device address=" + device.getAddress() + " is valid");
+            return bluetoothAdapter.getRemoteDevice(device.getAddress());
         }
-        Log.d(TAG, "queryPaired: " + deviceName + " was not found in paired list");
-        return null;
+        else {
+            Log.w(TAG, "getDevice: " + device.getAddress() + " is not a valid address");
+            return null;
+        }
     }
 
     /**

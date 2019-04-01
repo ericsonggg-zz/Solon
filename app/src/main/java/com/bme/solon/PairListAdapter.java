@@ -167,4 +167,14 @@ public class PairListAdapter extends RecyclerView.Adapter<PairListAdapter.PairLi
             addDevice(device);
         }
     }
+
+    /**
+     * Delete all Devices and add the new list
+     * @param devices   New device list
+     */
+    public void resetDevices(List<Device> devices) {
+        Log.v(TAG, "resetDevices: # = " + devices.size());
+        deviceList = new ArrayList<>();
+        addDevices(devices);
+    }
 }

@@ -3,6 +3,7 @@ package com.bme.solon.bluetooth;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -13,7 +14,6 @@ import android.bluetooth.le.ScanCallback;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -22,11 +22,11 @@ import android.os.Message;
 import android.os.Process;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.bme.solon.MainActivity;
 import com.bme.solon.R;
+import com.bme.solon.database.DatabaseHelper;
 import com.bme.solon.database.Device;
 
 public class BluetoothService extends Service {
@@ -46,7 +46,9 @@ public class BluetoothService extends Service {
     private Handler handler;
     private IBinder binder = new Binder();
 
+    private DatabaseHelper db;
     private BluetoothManager btManager;
+    private NotificationCompat.Builder serviceNotification;
 
     private Device device;
     private BluetoothGatt gattClient;
@@ -144,7 +146,7 @@ public class BluetoothService extends Service {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
-            Log.d(TAG, "onCharacteristicRead: status = " + status);
+            Log.v(TAG, "onCharacteristicRead: status = " + status);
 
             if (status == BluetoothGatt.GATT_FAILURE) {
                 Log.w(TAG, "onCharacteristicRead: retrying read");
@@ -163,7 +165,7 @@ public class BluetoothService extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
-            Log.d(TAG, "onCharacteristicChanged");
+            Log.v(TAG, "onCharacteristicChanged");
             processCharacteristic(characteristic.getValue());
         }
     };
@@ -172,22 +174,47 @@ public class BluetoothService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "onReceive: action = " + intent.getAction());
-
-            //cancel notification
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
-            notificationManagerCompat.cancel(NOTIFICATION_INSTANCE_ID);
 
             switch (intent.getAction()) {
                 case BluetoothBroadcast.ACTION_ADDRESS: //start activity
+                    notificationManagerCompat.cancel(NOTIFICATION_INSTANCE_ID);
                     Intent activityIntent = new Intent(context, MainActivity.class);
                     startActivity(activityIntent);
                     break;
                 case BluetoothBroadcast.ACTION_SNOOZE: //notify again later
+                    notificationManagerCompat.cancel(NOTIFICATION_INSTANCE_ID);
                     Log.d(TAG,"onReceive: posting snooze task");
                     handler.postDelayed(() -> {
                         Log.d(TAG, "onReceive: running snooze task");
                         notifyUser();
                     }, SNOOZE_DELAY_MILLIS);
+                case BluetoothAdapter.ACTION_STATE_CHANGED:
+                    if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR) == BluetoothAdapter.STATE_ON) {
+                        if (device != null) {
+                            connectToDevice(device);
+                        }
+                    }
+                case BluetoothBroadcast.ACTION_DISCONNECTED:
+                    Log.d(TAG, "onReceive: update notification - disconnected");
+                    serviceNotification.setContentTitle(getString(btManager.isBluetoothOn() ? R.string.notif_service_disconnected : R.string.notif_service_bluetooth_off));
+                    notificationManagerCompat.notify(NOTIFICATION_SERVICE_ID, serviceNotification.build());
+                    break;
+                case BluetoothBroadcast.ACTION_CONNECTING:
+                    Log.d(TAG, "onReceive: update notification - connecting to " + device.getAppName());
+                    serviceNotification.setContentTitle(String.format(getString(R.string.notif_service_connecting),device.getAppName()));
+                    notificationManagerCompat.notify(NOTIFICATION_SERVICE_ID, serviceNotification.build());
+                    break;
+                case BluetoothBroadcast.ACTION_CONNECTED:
+                    Log.d(TAG, "onReceive: update notification - connected to " + device.getAppName());
+                    serviceNotification.setContentTitle(String.format(getString(R.string.notif_service_connected),device.getAppName()));
+                    notificationManagerCompat.notify(NOTIFICATION_SERVICE_ID, serviceNotification.build());
+                    break;
+                case BluetoothBroadcast.ACTION_CONNECTED_UPDATE:
+                    Log.d(TAG, "onReceive: update notification - connected (update) to " + device.getAppName());
+                    serviceNotification.setContentTitle(String.format(getString(R.string.notif_service_connected),device.getAppName()));
+                    notificationManagerCompat.notify(NOTIFICATION_SERVICE_ID, serviceNotification.build());
+                    break;
             }
         }
     };
@@ -223,6 +250,7 @@ public class BluetoothService extends Service {
     public void onCreate() {
         Log.d(TAG, "onCreate");
         btManager = BluetoothManager.getInstance();
+        db = DatabaseHelper.getInstance(this);
 
         //Start worker thread
         HandlerThread thread = new HandlerThread(THREAD_NAME, Process.THREAD_PRIORITY_FOREGROUND);
@@ -231,27 +259,31 @@ public class BluetoothService extends Service {
         handler = new Handler(looper);
 
         //start foreground
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, NOTIFICATION_SERVICE_CHANNEL)
-                .setContentTitle(getText(R.string.app_name))
-                .setContentText("TEMPORARY")
+        serviceNotification = new NotificationCompat.Builder(this, NOTIFICATION_SERVICE_CHANNEL)
+                .setSmallIcon(R.mipmap.logo_round)
+                //.setContentTitle(getText(R.string.app_name))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);       //TODO: add ticker & proper notification
-
-        startForeground(NOTIFICATION_SERVICE_ID, notification.build());
+        serviceNotification.setContentTitle(getString(btManager.isBluetoothOn() ? R.string.notif_service_disconnected : R.string.notif_service_bluetooth_off));
+        startForeground(NOTIFICATION_SERVICE_ID, serviceNotification.build());
 
         //register broadcast receiver
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothBroadcast.ACTION_ADDRESS);
-        filter.addAction(BluetoothBroadcast.ACTION_SNOOZE);
-        registerReceiver(broadcastReceiver, filter);
-
-        //TODO: START BT
+        registerReceiver(broadcastReceiver, BluetoothBroadcast.getIntentFilter());
     }
 
+    /**
+     * Try to connect to active device on start, if not already connecting/connected
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
 
-        notifyUser();
+        db.dumpDatabase();
+
+        Device activeDevice = db.getActiveDevice();
+        if (activeDevice != null && (gattStatus == BluetoothProfile.STATE_DISCONNECTED || gattStatus == BluetoothProfile.STATE_DISCONNECTING)) {
+            Log.i(TAG, "onStartCommand: connecting from database");
+            connectToDevice(activeDevice);
+        }
         return START_STICKY;
     }
 
@@ -293,13 +325,10 @@ public class BluetoothService extends Service {
 
     /**
      * Retrieve the connected Bluetooth device
-     * @return  the Bluetooth device or null if not connected.
+     * @return  the Device or null if not connected.
      */
-    public BluetoothDevice getConnectedDevice() {
-        if (gattClient == null) {
-            return null;
-        }
-        return gattClient.getDevice();
+    public Device getConnectedDevice() {
+        return device;
     }
 
     /**
@@ -320,8 +349,7 @@ public class BluetoothService extends Service {
         Log.d(TAG, "disableBluetooth; posting task");
         handler.post(() -> {
             Log.d(TAG, "disableBluetooth; running task");
-            notifyUser();
-            //btManager.disableBluetooth();
+            btManager.disableBluetooth();
         });
     }
 
@@ -359,25 +387,50 @@ public class BluetoothService extends Service {
         Log.d(TAG, "connectToDevice: posting task with data " + deviceData.toString());
         handler.post(() -> {
             Log.d(TAG, "connectToDevice: running task with data " + deviceData.toString());
-            BluetoothDevice device = btManager.queryPaired(deviceData.getName(), deviceData.getAddress());
-            if (device != null) {
-                Log.d(TAG,"connectToDevice: paired device found");
-                gattClient = btManager.connectToDevice(device, this, bluetoothCallback);
-                broadcastConnecting(device);
+            BluetoothDevice btDevice = btManager.getDevice(deviceData);
+            if (btDevice != null) {
+                Log.d(TAG,"connectToDevice: valid device found");
+                device = deviceData;
+                gattClient = btManager.connectToDevice(btDevice, this, bluetoothCallback);
+                broadcastConnecting(deviceData);
+                setDeviceToActive(deviceData);
             }
+            Log.d(TAG, "connectToDevice: finished " + deviceData.toString());
         });
     }
 
     /**
      * Start a connection to the BluetoothDevice
-     * @param device    Device to connect with
+     * @param btDevice    Device to connect with
      */
-    public void connectToDevice(BluetoothDevice device) {
-        Log.d(TAG, "connectToDevice: posting task with BluetoothDevice " + device.toString());
+    public void connectToDevice(BluetoothDevice btDevice) {
+        Log.d(TAG, "connectToDevice: posting task with BluetoothDevice " + btDevice.toString());
         handler.post(() -> {
-            Log.d(TAG, "connectToDevice: running task with BluetoothDevice " + device.toString());
-            gattClient = btManager.connectToDevice(device, this, bluetoothCallback);
-            broadcastConnecting(device);
+            Log.d(TAG, "connectToDevice: running task with BluetoothDevice " + btDevice.toString());
+            Device newDevice = new Device(btDevice.getName(), btDevice.getAddress());
+            device = newDevice;
+            gattClient = btManager.connectToDevice(btDevice, this, bluetoothCallback);
+            broadcastConnecting(newDevice);
+            setDeviceToActive(newDevice);
+            Log.d(TAG, "connectToDevice: finished " + btDevice.toString());
+        });
+    }
+
+    /**
+     * Add device to database as active
+     * @param activeDevice Device to set active
+     */
+    private void setDeviceToActive(Device activeDevice) {
+        Log.d(TAG, "setDeviceToActive: posting task with Device " + activeDevice.toString());
+        handler.post(() -> {
+            Log.d(TAG, "setDeviceToActive: running task with Device " + activeDevice.toString());
+            if (db != null) {
+                db.addActiveDevice(device);
+                broadcastDevicesChanged();
+            }
+            else {
+                Log.w(TAG, "setDeviceToActive: database was null, could not set device " + activeDevice.toString());
+            }
         });
     }
 
@@ -389,7 +442,7 @@ public class BluetoothService extends Service {
     private void processCharacteristic(byte[] value) {
 
         //TODO: replace with reading from StripStatus
-        if (true) {
+        if (false) {
             notifyUser();
         }
     }
@@ -429,37 +482,36 @@ public class BluetoothService extends Service {
         notificationManagerCompat.notify(NOTIFICATION_INSTANCE_ID, notification);
     }
 
-    private void broadcast(int state) {
-        final Intent intent = new Intent();
-
-    }
-
-    private void broadcastConnecting (BluetoothDevice device) {
-        Log.v(TAG, "broadcastConnecting: device " + device.getName() + " " + device.getAddress());
+    private void broadcastConnecting (Device device) {
+        Log.d(TAG, "broadcastConnecting: device " + device.getName() + " " + device.getAddress());
         final Intent intent = new Intent(BluetoothBroadcast.ACTION_CONNECTING);
         intent.putExtra(BluetoothBroadcast.KEY_DEVICE_NAME, device.getName());
         intent.putExtra(BluetoothBroadcast.KEY_DEVICE_ADDRESS, device.getAddress());
-
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        sendBroadcast(intent);
     }
 
     private void broadcastConnected() {
-        Log.v(TAG, "broadcastConnecting: update only");
+        Log.d(TAG, "broadcastConnected: update only");
         final Intent intent = new Intent(BluetoothBroadcast.ACTION_CONNECTED_UPDATE);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        sendBroadcast(intent);
     }
 
-    private void broadcastConnected (BluetoothDevice device) {
-        Log.v(TAG, "broadcastConnected: device " + device.getName() + " " + device.getAddress());
+    private void broadcastConnected (Device device) {
+        Log.d(TAG, "broadcastConnected: device " + device.getName() + " " + device.getAddress());
         final Intent intent = new Intent(BluetoothBroadcast.ACTION_CONNECTED);
         intent.putExtra(BluetoothBroadcast.KEY_DEVICE_NAME, device.getName());
-
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        sendBroadcast(intent);
     }
 
     private void broadcastDisconnected () {
-        Log.v(TAG, "broadcastDisconnected");
+        Log.d(TAG, "broadcastDisconnected");
         final Intent intent = new Intent(BluetoothBroadcast.ACTION_DISCONNECTED);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        sendBroadcast(intent);
+    }
+
+    private void broadcastDevicesChanged() {
+        Log.d(TAG, "broadcastDevicesChanged");
+        final Intent intent = new Intent(BluetoothBroadcast.ACTION_DEVICES_CHANGED);
+        sendBroadcast(intent);
     }
 }

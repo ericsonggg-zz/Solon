@@ -23,6 +23,10 @@
     <string name="channel_instance_name">Solon Alerts</string>
     <string name="channel_instance_description">Instance alerts</string>
 
+    <string name="notif_service_bluetooth_off">Bluetooth is off!</string>
+    <string name="notif_service_disconnected">No device connected</string>
+    <string name="notif_service_connecting">Connecting to %1$s&#8230;</string>
+    <string name="notif_service_connected">Monitoring %1$s.</string>
     <string name="notif_incontinence_title">Incontinence Detected!</string>
     <string name="notif_incontinence_message">%1$s has detected incontinence.</string>
     <string name="notif_address_message">Address now</string>

@@ -38,8 +38,8 @@ public class ScanListAdapter extends RecyclerView.Adapter<ScanListAdapter.ScanLi
          */
         public ScanListViewHolder(View itemView) {
             super(itemView);
-            name = itemView.findViewById(R.id.connect_pair_list_name);
-            address = itemView.findViewById(R.id.connect_pair_list_address);
+            name = itemView.findViewById(R.id.connect_scan_list_name);
+            address = itemView.findViewById(R.id.connect_scan_list_address);
         }
 
         /**

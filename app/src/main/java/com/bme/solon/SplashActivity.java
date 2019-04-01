@@ -33,7 +33,6 @@ import java.util.List;
  */
 public class SplashActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
-    private static final int PERMISSION_REQUEST_VIBRATE = 2;
     private static final String TAG = "SplashActivity";
 
     private ServiceConnection btServiceConnection;
@@ -142,7 +141,6 @@ public class SplashActivity extends AppCompatActivity {
                 startActivityForResult(enableBtIntent, BluetoothManager.REQUEST_ENABLE_BT);
             }
             else {
-                doBluetoothTask = true;
                 startupTasks();
             }
         }
@@ -191,11 +189,9 @@ public class SplashActivity extends AppCompatActivity {
             if (resultCode != RESULT_OK) {
                 Log.d(TAG, "onActivityResult: Bluetooth enable request denied");
                 Toast.makeText(this, R.string.splash_bluetooth_disabled_toast, Toast.LENGTH_SHORT).show();
-                doBluetoothTask = false;
             }
             else {
                 Log.d(TAG, "onActivityResult: Bluetooth enable request approved");
-                doBluetoothTask = true;
             }
         }
         else {
@@ -254,23 +250,6 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     /**
-     * Run startup Bluetooth task if bound to service
-     * Try to connect to "active" device, if exists.
-     */
-    private void bluetoothTask() {
-        if (isServiceBound) {
-            Log.d(TAG, "bluetoothTask: service is bound, querying database");
-            Device activeDevice = db.getActiveDevice();
-            if (activeDevice != null) {
-                Log.d(TAG, "bluetoothTask: calling connectToDevice() with " + activeDevice.toString());
-                btService.connectToDevice(activeDevice);
-            }
-        }
-        Log.d(TAG, "bluetoothTask: complete");
-        //TODO: fix this because it happens too soon/fast
-    }
-
-    /**
      * Runs all startup tasks.
      */
     private void startupTasks() {
@@ -278,20 +257,22 @@ public class SplashActivity extends AppCompatActivity {
         //TODO: add all remaining AsyncTasks
         getPermissionsTask();
 
-        if (doBluetoothTask) {
-            bluetoothTask();
-        }
-
         //TODO: remove cause testing
         //addDevices();
+        //killService();
 
         ChangeActivityAsync finalTask = new ChangeActivityAsync(this, tasks);
         finalTask.execute();
     }
 
     private void addDevices() {
-        db.addActiveDevice(new Device("TEST1","TEST1_ADDR"));
-        db.addActiveDevice(new Device("TEST2", "TEST2_ADDR"));
-        db.addActiveDevice(new Device("TEST3", "TEST3_ADDR", "TEST4_MOD"));
+        //db.wipeData();
+        db.addActiveDevice(new Device("TEST1", "00:11:22:33:FF:ED"));
+        db.addActiveDevice(new Device("TEST2", "00:11:22:33:FF:EE"));
+        db.addActiveDevice(new Device("TEST3", "00:11:22:33:FF:EF"));
+    }
+
+    private void killService() {
+        btService.stopSelf();
     }
 }

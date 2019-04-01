@@ -2,12 +2,15 @@ package com.bme.solon.database;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
+
+import com.bme.solon.bluetooth.BluetoothBroadcast;
 
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
@@ -25,7 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private SQLiteDatabase writeDb;
 
     // Database Version
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
 
     // Database Name
     private static final String DATABASE_NAME = "Instance_db";
@@ -46,7 +49,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * @return          The singleton instance
      */
     public static DatabaseHelper getInstance(Context context) {
+        Log.v(TAG, "getInstance");
         if (singleton == null) {
+            Log.v(TAG,"getInstance: creating new instance");
             singleton = new DatabaseHelper(context.getApplicationContext());
         }
         return singleton;
@@ -216,13 +221,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Add an active device into the {@link Device} database.
      * Checks for duplicates - if already inserted, updates existing row.
+     * Old active device is made inactive.
      * @param device    Device to add
      */
     public long addActiveDevice(Device device) {
         long id = -1;
         ContentValues values = new ContentValues();
+        Device oldActiveDevice = getActiveDevice();
+        Device currentDevice = getDevice(device.getName(), device.getAddress());
 
-        if (getDevice(device.getName(), device.getAddress()) == null) {
+        if (currentDevice == null) {
             Log.d(TAG, "addActiveDevice: adding new device");
             values.put(Device.COLUMN_NAME, device.getName());
             values.put(Device.COLUMN_ADDRESS, device.getAddress());
@@ -232,13 +240,40 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         else {
             Log.d(TAG, "addActiveDevice: updating values");
+            id = currentDevice.getId();
+            values.put(Device.COLUMN_ACTIVE, 1);
             values.put(Device.COLUMN_APPNAME, device.getAppName());
-            id = writeDb.update(Device.TABLE_NAME,
+            writeDb.update(Device.TABLE_NAME,
                     values,
-                    Device.COLUMN_NAME + "=? AND " + Device.COLUMN_ADDRESS + "=?",
-                    new String[] {device.getName(), device.getAddress()});
+                    Device.COLUMN_ID + "=?",
+                    new String[] {Long.toString(id)});
+        }
+
+        //Make other device non-active if exists
+        if (oldActiveDevice != null) {
+            Log.v(TAG, "addActiveDevice: making old device id=" + oldActiveDevice.getId() + " non-active");
+            values = new ContentValues();
+            values.put(Device.COLUMN_ACTIVE, 0);
+            writeDb.update(Device.TABLE_NAME,
+                    values,
+                    Device.COLUMN_ID + "=?",
+                    new String[]{Long.toString(oldActiveDevice.getId())});
         }
         return id;
+    }
+
+    /**
+     * Update the app name of a device
+     * @param device    Device with updated name
+     */
+    public void updateAppName(Device device) {
+        Log.d(TAG, "updateAppName: for " + device.toString());
+        ContentValues values = new ContentValues();
+        values.put(Device.COLUMN_APPNAME, device.getAppName());
+        writeDb.update(Device.TABLE_NAME,
+                values,
+                Device.COLUMN_ID + "=?",
+                new String[] {Long.toString(device.getId())});
     }
 
     /**
@@ -284,7 +319,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Device device = null;
 
         Cursor cursor = readDb.query(Device.TABLE_NAME,
-                new String[]{Device.COLUMN_ID, Device.COLUMN_NAME, Device.COLUMN_ADDRESS, Device.COLUMN_ACTIVE},
+                null,
                 Device.COLUMN_ACTIVE + "=1",
                 null, null, null, null, null);
 
@@ -335,5 +370,40 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             cursor.close();
         }
         return devices;
+    }
+
+    /**
+     * NEVER CALL THIS
+     */
+    public void wipeData() {
+        Log.w(TAG, "wipeData");
+        writeDb.execSQL("DROP TABLE IF EXISTS " + Instance.TABLE_NAME);
+        writeDb.execSQL("DROP TABLE IF EXISTS " + Device.TABLE_NAME);
+        onCreate(writeDb);
+    }
+
+    /**
+     * PURELY for diagnostic reasons
+     */
+    public void dumpDatabase() {
+        Log.v(TAG, "dumpDatabase");
+        Cursor cursor = readDb.query(Device.TABLE_NAME,
+                null, null, null, null, null, null, null);
+
+        if (cursor != null) {
+            if (cursor.getCount() > 0) {
+                cursor.moveToFirst();
+                Log.v(TAG, "dumpDatabase: columns: " + cursor.getColumnNames().toString());
+
+                do {
+                    Log.v(TAG, "dumpDatabase: entry: " +
+                            cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ID)) + " " +
+                            cursor.getString(cursor.getColumnIndex(Device.COLUMN_NAME)) + " " +
+                            cursor.getString(cursor.getColumnIndex(Device.COLUMN_ADDRESS)) + " " +
+                            cursor.getInt(cursor.getColumnIndex(Device.COLUMN_ACTIVE)) + " " +
+                            cursor.getString(cursor.getColumnIndex(Device.COLUMN_APPNAME)));
+                } while (cursor.moveToNext());
+            }
+        }
     }
 }

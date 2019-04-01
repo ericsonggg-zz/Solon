@@ -9,7 +9,7 @@ public class Device {
     public static final String COLUMN_ACTIVE = "active";
     public static final String COLUMN_APPNAME = "appname";
 
-    private int id;
+    private long id;
     private String name;
     private String address;
     private boolean active;
@@ -53,7 +53,7 @@ public class Device {
      * @param active    Active status
      * @param appName   App assigned name
      */
-    public Device(int id, String name, String address, int active, String appName) {
+    public Device(long id, String name, String address, int active, String appName) {
         this.id = id;
         this.name = name;
         this.address = address;
@@ -61,7 +61,7 @@ public class Device {
         this.appName = appName;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
     public String getName() {
