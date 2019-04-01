@@ -69,21 +69,23 @@ public class HomeFragment extends MainFragment {
         //Get data from database
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
         Instance instance = db.getLatestInstance();
-        Device device = db.getDevice(instance.getDeviceId());
+        if (instance != null) {
+            Device device = db.getDevice(instance.getDeviceId());
 
-        //Update instance views
-        if (instance.getStatus() == Instance.STATUS_RESOLVED) {
-            instanceResolution.setText(R.string.home_instance_resolved);
-            instanceResolution.setTextColor(themeTextColor);
+            //Update instance views
+            if (instance.getResolution() == Instance.RESOLVED) {
+                instanceResolution.setText(R.string.home_instance_resolved);
+                instanceResolution.setTextColor(themeTextColor);
+            } else {
+                instanceResolution.setText(R.string.home_instance_unresolved);
+                instanceResolution.setTextColor(Color.RED);
+            }
+
+            instanceDevice.setText(device.getAppName());
+            //instanceAnalogClock.set
+            instanceDigitalClock.setText(instance.getDateTime().format(Instance.TIME_FORMAT));
+            instanceDate.setText(instance.getDateTime().format(Instance.DATE_FORMAT));
         }
-        else {
-            instanceResolution.setText(R.string.home_instance_unresolved);
-            instanceResolution.setTextColor(Color.RED);
-        }
-        instanceDevice.setText(device.getAppName());
-        //instanceAnalogClock.set
-        instanceDigitalClock.setText(instance.getDateTime().format(Instance.TIME_FORMAT));
-        instanceDate.setText(instance.getDateTime().format(Instance.DATE_FORMAT));
     }
 
     @Override
