@@ -7,12 +7,12 @@
     tools:context=".HomeFragment">
 
     <TextView
-        android:id="@+id/home_instance_dname"
+        android:id="@+id/home_active_device"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:fontFamily="sans-serif-condensed-light"
-        android:text="DEVICE NAME"
+        android:text="@string/status_disconnected_device"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:textColor="@color/darkTeal"
@@ -22,18 +22,18 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/home_instance_connect"
+        android:id="@+id/home_active_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif-condensed-light"
-        android:text="Connected"
+        android:text="@string/status_disconnected"
         android:textSize="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/home_instance_dname" />
+        app:layout_constraintTop_toBottomOf="@+id/home_active_device" />
 
     <TextView
-        android:id="@+id/home_instance_intro"
+        android:id="@+id/home_intro"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
@@ -41,7 +41,7 @@
         android:fontFamily="sans-serif-condensed-light"
         android:text="@string/home_instance_prior_incidents"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/home_instance_connect" />
+        app:layout_constraintTop_toBottomOf="@+id/home_active_status" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/home_instance_list"
@@ -55,6 +55,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/home_instance_intro"/>
+        app:layout_constraintTop_toBottomOf="@+id/home_intro"/>
 
 </android.support.constraint.ConstraintLayout>
