@@ -59,7 +59,7 @@ public class HomeFragment extends MainFragment {
         List<Instance> instances = db.getAllInstances();
         List<Device> devices = new ArrayList<>();
         for (Instance instance : instances) {
-            devices.add(db.getDevice(instance.getId()));
+            devices.add(db.getDevice(instance.getDeviceId()));
         }
         instanceListAdapter.addInstances(instances, devices);
         instanceListAdapter.notifyDataSetChanged();
