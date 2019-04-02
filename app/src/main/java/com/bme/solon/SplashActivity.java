@@ -269,7 +269,7 @@ public class SplashActivity extends AppCompatActivity {
         getPermissionsTask();
 
         //TODO: remove cause testing
-        addDevices();
+        //addDevices();
         //addInstances();
         //killService();
         //db.wipeData();
