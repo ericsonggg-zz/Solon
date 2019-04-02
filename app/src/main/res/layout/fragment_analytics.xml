@@ -85,6 +85,7 @@
             android:layout_height="wrap_content"
             android:text="@string/analytics_response_time_subdefault"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/analytics_response_time_data"
             app:layout_constraintEnd_toEndOf="parent" />
     </android.support.constraint.ConstraintLayout>
 
