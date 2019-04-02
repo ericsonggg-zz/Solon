@@ -120,6 +120,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
     public InstanceListAdapter() {
         super();
         instanceList = new ArrayList<>();
+        deviceList = new ArrayList<>();
     }
 
     /**
@@ -178,6 +179,14 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
         Log.v(TAG, "addInstances: # = " + instances.size());
         for (int i = 0; i < instances.size(); i++) {
             addInstance(instances.get(i), devices.get(i));
+        }
+    }
+
+    public void updateInstance(Instance instance, Device device) {
+        Log.v(TAG, "updateInstance: " + instance.toString());
+        if (instanceList.contains(instance)) {
+            Log.v(TAG, "updateInstance: found old instance");
+
         }
     }
 }

@@ -459,6 +459,7 @@ public class BluetoothService extends Service {
                 currentInstance = new Instance(status.getSeverity(), device.getId());
                 Long id = db.addInstance(currentInstance);
                 currentInstance.setId(id);
+                broadcastNewInstance(id);
             }
             else if (currentStatus.isLessSevere(status)) {
                 Log.i(TAG, "processCharacteristic: strip is worse than last reading, is now " + status.name());
@@ -467,6 +468,7 @@ public class BluetoothService extends Service {
                 currentInstance.setSeverity(status.getSeverity());
                 currentInstance.setResolution(Instance.UNRESOLVED);
                 db.updateInstance(currentInstance);
+                broadcastInstanceUpdated(currentInstance.getId());
             }
         }
         else {
@@ -481,6 +483,7 @@ public class BluetoothService extends Service {
                     currentInstance.setResolution(Instance.RESOLVED);
                     currentInstance.setResolutionTime();
                     db.updateInstance(currentInstance);
+                    broadcastInstanceUpdated(currentInstance.getId());
                     currentInstance = null;
                 }
             }
@@ -535,7 +538,7 @@ public class BluetoothService extends Service {
         sendBroadcast(intent);
     }
 
-    private void broadcastConnected (Device device) {
+    private void broadcastConnected(Device device) {
         Log.d(TAG, "broadcastConnected: device " + device.getName() + " " + device.getAddress());
         final Intent intent = new Intent(BluetoothBroadcast.ACTION_CONNECTED);
         intent.putExtra(BluetoothBroadcast.KEY_DEVICE_NAME, device.getName());
@@ -551,6 +554,20 @@ public class BluetoothService extends Service {
     private void broadcastDevicesChanged() {
         Log.d(TAG, "broadcastDevicesChanged");
         final Intent intent = new Intent(BluetoothBroadcast.ACTION_DEVICES_CHANGED);
+        sendBroadcast(intent);
+    }
+
+    private void broadcastNewInstance(long id) {
+        Log.d(TAG, "broadcastNewInstance");
+        final Intent intent = new Intent(BluetoothBroadcast.ACTION_NEW_INSTANCE);
+        intent.putExtra(BluetoothBroadcast.KEY_INSTANCE_ID, id);
+        sendBroadcast(intent);
+    }
+
+    private void broadcastInstanceUpdated(long id) {
+        Log.d(TAG, "broadcastInstanceUpdated");
+        final Intent intent = new Intent(BluetoothBroadcast.ACTION_INSTANCE_UPDATE);
+        intent.putExtra(BluetoothBroadcast.KEY_INSTANCE_ID, id);
         sendBroadcast(intent);
     }
 }

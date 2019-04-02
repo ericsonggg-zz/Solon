@@ -12,11 +12,14 @@ public class BluetoothBroadcast {
     public static final String ACTION_CONNECTED_UPDATE = "com.bme.solon.ACTION_CONNECTED_UPDATE";
     public static final String ACTION_DISCONNECTED = "com.bme.solon.ACTION_DISCONNECTED";
     public static final String ACTION_DEVICES_CHANGED = "com.bme.solon.ACTION_DEVICES_CHANGED";
+    public static final String ACTION_NEW_INSTANCE = "com.bme.solon.ACTION_NEW_INSTANCE";
+    public static final String ACTION_INSTANCE_UPDATE = "com.bme.solon.ACTION_INSTANCE_UPDATE";
     public static final String ACTION_ADDRESS = "com.bme.solon.ADDRESS";
     public static final String ACTION_SNOOZE = "com.bme.solon.SNOOZE";
 
     public static final String KEY_DEVICE_NAME = "KEY_DEVICE_NAME";
     public static final String KEY_DEVICE_ADDRESS = "KEY_DEVICE_ADDRESS";
+    public static final String KEY_INSTANCE_ID = "KEY_INSTANCE_ID";
 
     /**
      * Get intent filter for this app.
@@ -33,6 +36,8 @@ public class BluetoothBroadcast {
         filter.addAction(BluetoothBroadcast.ACTION_CONNECTED_UPDATE);
         filter.addAction(BluetoothBroadcast.ACTION_DISCONNECTED);
         filter.addAction(BluetoothBroadcast.ACTION_DEVICES_CHANGED);
+        filter.addAction(BluetoothBroadcast.ACTION_NEW_INSTANCE);
+        filter.addAction(BluetoothBroadcast.ACTION_INSTANCE_UPDATE);
         return filter;
     }
 }

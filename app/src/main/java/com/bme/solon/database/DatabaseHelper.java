@@ -119,31 +119,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         writeDb.update(Instance.TABLE_NAME, values, Instance.COLUMN_ID + "=?", new String[] {Long.toString(instance.getId())});
     }
 
+    /**
+     * Get a specific instance from the database, if exists
+     * @param id    Database ID of the instance
+     * @return      The Instance, or null if not found.
+     */
     public Instance retrieveInstance(long id) {
-         // get readable database as we are not inserting anything
-        SQLiteDatabase db = readDb;
+        Log.v(TAG, "retrieveInstance");
+        Instance instance = null;
 
-        Cursor cursor = db.query(Instance.TABLE_NAME,
-                new String[]{Instance.COLUMN_ID, Instance.COLUMN_SEVERITY, Instance.COLUMN_RESOLUTION, Instance.COLUMN_TIME},
+        Cursor cursor = readDb.query(Instance.TABLE_NAME,
+                null,
                 Instance.COLUMN_ID + "=?",
                 new String[]{String.valueOf(id)}, null, null, null, null);
 
-        if (cursor != null)
-            cursor.moveToFirst();
-
-        Instance instance = new Instance(
-                cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
-                cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)),
-                cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
-                cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION)),
-                cursor.getString(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION_TIME)),
-                cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
-
-        // close the cursor
-        cursor.close();
+        if (cursor != null) {
+            if (cursor.getCount() > 0) {
+                Log.d(TAG, "getLatestInstance: db query found device");
+                cursor.moveToFirst();
+                instance = new Instance(
+                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
+                        cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)),
+                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
+                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION)),
+                        cursor.getString(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION_TIME)),
+                        cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
+            }
+            cursor.close();
+        }
         return instance;
     }
 
+    /**
+     * Get the latest Instance in the database
+     * @return  The latest database, or null if database is empty.
+     */
     public Instance getLatestInstance() {
         Log.d(TAG,"getLatestInstance");
         Instance instance = null;
@@ -169,33 +179,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return instance;
     }
 
+    /**
+     * Get all instances in database
+     * @return  All instances
+     */
     public List<Instance> getAllInstances() {
+        Log.d(TAG, "getAllInstances");
         List<Instance> instances = new ArrayList<>();
 
-        // Select All Query
-        String selectQuery = "SELECT  * FROM " + Instance.TABLE_NAME + " ORDER BY " +
-                Instance.COLUMN_TIME + " DESC";
+        Cursor cursor = readDb.query(Instance.TABLE_NAME,
+                null,null,null, null, null, Instance.COLUMN_TIME + " DESC", null);
 
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor != null) {
+            if (cursor.getCount() > 0) {
+                Log.d(TAG, "getAllInstances: db query found instance(s)");
+                cursor.moveToFirst();
 
-        // looping through all rows and adding to list
-        if (cursor.moveToFirst()) {
-            do {
-                Instance instance = new Instance(
-                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
-                        cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)),
-                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
-                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION)),
-                        cursor.getString(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION_TIME)),
-                        cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
-                instances.add(instance);
-            } while (cursor.moveToNext());
+                //Loop over all instances
+                do {
+                    Instance instance = new Instance(
+                            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
+                            cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)),
+                            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
+                            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION)),
+                            cursor.getString(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION_TIME)),
+                            cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
+                    instances.add(instance);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
         }
-
-        // close db connection
-        db.close();
-
         return instances;
     }
 
