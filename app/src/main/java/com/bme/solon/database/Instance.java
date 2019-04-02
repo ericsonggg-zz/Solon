@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class Instance {
     public static final String TABLE_NAME = "Instance";
@@ -37,14 +38,12 @@ public class Instance {
                     + COLUMN_DEVICE_ID + " INTEGER"
                     + ")";
 
-
-
     public static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy MM dd hh:mm:ss a");
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MMMM dd, yyyy");
     public static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("h:mm:ss a");
 
     public Instance(int severity, long deviceId) {
-        this(-1, DATE_TIME_FORMAT.format(Calendar.getInstance().getTime()), severity, UNRESOLVED, DATE_TIME_FORMAT.format(Calendar.getInstance().getTime()), deviceId);
+        this(-1, DATE_TIME_FORMAT.format(GregorianCalendar.getInstance().getTime()), severity, UNRESOLVED, DATE_TIME_FORMAT.format(GregorianCalendar.getInstance().getTime()), deviceId);
     }
 
     /**
@@ -58,11 +57,11 @@ public class Instance {
     public Instance(long id, String dateTime, int severity, int resolution, String resolutionTime, long deviceId) {
         try {
             this.id = id;
-            this.dateTime = Calendar.getInstance();
+            this.dateTime = GregorianCalendar.getInstance();
             this.dateTime.setTime(DATE_TIME_FORMAT.parse(dateTime));
             this.severity = severity;
             this.resolution = resolution;
-            this.resolutionTime = Calendar.getInstance();
+            this.resolutionTime = GregorianCalendar.getInstance();
             this.resolutionTime.setTime(DATE_TIME_FORMAT.parse(resolutionTime));
             this.deviceId = deviceId;
         } catch (ParseException ignored) {};
@@ -73,6 +72,9 @@ public class Instance {
     }
     public Date getDateTime() {
         return dateTime.getTime();
+    }
+    public Calendar getDateTimeAsCalendar() {
+        return dateTime;
     }
     public String getDateTimeAsString() {
         return DATE_TIME_FORMAT.format(dateTime.getTime());
@@ -85,6 +87,9 @@ public class Instance {
     }
     public Date getResolutionTime() {
         return resolutionTime.getTime();
+    }
+    public Calendar getResolutionTimeAsCalender() {
+        return resolutionTime;
     }
     public String getResolutionTimeAsString() {
         return DATE_TIME_FORMAT.format(resolutionTime.getTime());
@@ -103,7 +108,7 @@ public class Instance {
         this.resolution = resolution;
     }
     public void setResolutionTime() {
-        resolutionTime = Calendar.getInstance();
+        resolutionTime = GregorianCalendar.getInstance();
     }
     public void setResolutionTime(Date resolutionTime) {
         this.resolutionTime.setTime(resolutionTime);
