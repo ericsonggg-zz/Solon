@@ -70,7 +70,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
                 //Update instance views
                 if (instance.getResolution() == Instance.RESOLVED) {
                     instanceResolution.setText(R.string.home_instance_resolved);
-                    instanceResolution.setTextColor(Color.rgb(93, 93, 93));
+                    instanceResolution.setTextColor(Color.rgb(103, 103, 103));
                 } else {
                     instanceResolution.setText(R.string.home_instance_unresolved);
                     instanceResolution.setTextColor(themeTextColor);
