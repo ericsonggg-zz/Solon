@@ -1,8 +1,6 @@
 package com.bme.solon;
 
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -30,8 +28,7 @@ public class HomeFragment extends MainFragment {
     /**
      * Required empty constructor
      */
-    public HomeFragment() {
-    }
+    public HomeFragment() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -39,13 +36,6 @@ public class HomeFragment extends MainFragment {
         Log.d(TAG,"onCreateView");
         // Inflate the layout for this fragment
         View fragmentView = inflater.inflate(R.layout.fragment_home, container, false);
-
-        //Set version name
-        try {
-            PackageInfo pinfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
-            TextView version = fragmentView.findViewById(R.id.home_version);
-            version.setText(String.format(getString(R.string.home_version), pinfo.versionName));
-        } catch (PackageManager.NameNotFoundException | NullPointerException ignored) {}
 
         //Find views
         instanceResolution = fragmentView.findViewById(R.id.home_instance_resolution);
@@ -69,21 +59,23 @@ public class HomeFragment extends MainFragment {
         //Get data from database
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
         Instance instance = db.getLatestInstance();
-        Device device = db.getDevice(instance.getDeviceId());
+        if (instance != null) {
+            Device device = db.getDevice(instance.getDeviceId());
 
-        //Update instance views
-        if (instance.getStatus() == Instance.STATUS_RESOLVED) {
-            instanceResolution.setText(R.string.home_instance_resolved);
-            instanceResolution.setTextColor(themeTextColor);
+            //Update instance views
+            if (instance.getResolution() == Instance.RESOLVED) {
+                instanceResolution.setText(R.string.home_instance_resolved);
+                instanceResolution.setTextColor(themeTextColor);
+            } else {
+                instanceResolution.setText(R.string.home_instance_unresolved);
+                instanceResolution.setTextColor(Color.RED);
+            }
+
+            instanceDevice.setText(device.getAppName());
+            //instanceAnalogClock.set
+            instanceDigitalClock.setText(instance.getDateTime().format(Instance.TIME_FORMAT));
+            instanceDate.setText(instance.getDateTime().format(Instance.DATE_FORMAT));
         }
-        else {
-            instanceResolution.setText(R.string.home_instance_unresolved);
-            instanceResolution.setTextColor(Color.RED);
-        }
-        instanceDevice.setText(device.getAppName());
-        //instanceAnalogClock.set
-        instanceDigitalClock.setText(instance.getDateTime().format(Instance.TIME_FORMAT));
-        instanceDate.setText(instance.getDateTime().format(Instance.DATE_FORMAT));
     }
 
     @Override

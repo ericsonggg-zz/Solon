@@ -12,8 +12,11 @@ public enum StripStatus {
     private StripStatus(int severity) {
         this.severity = severity;
     }
-
     public int getSeverity() {
         return severity;
+    }
+
+    public boolean isLessSevere(StripStatus compare) {
+        return severity < compare.getSeverity();
     }
 }

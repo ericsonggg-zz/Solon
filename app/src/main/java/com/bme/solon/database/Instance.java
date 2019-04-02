@@ -9,24 +9,27 @@ public class Instance {
     public static final String COLUMN_ID = "id";
     public static final String COLUMN_TIME = "dateTime";
     public static final String COLUMN_SEVERITY = "severity";
-    public static final String COLUMN_STATUS = "status";
+    public static final String COLUMN_RESOLUTION = "resolution";
+    public static final String COLUMN_RESOLUTION_TIME = "resolutionTime";
     public static final String COLUMN_DEVICE_ID = "deviceId";
 
-    public static final int STATUS_RESOLVED = 1;
-    public static final int STATUS_UNRESOLVED = 0;
+    public static final int RESOLVED = 1;
+    public static final int UNRESOLVED = 0;
 
-    private int id;
-    private int severity;
-    private int status;
+    private long id;
     private LocalDateTime dateTime;
+    private int severity;
+    private int resolution;
+    private LocalDateTime resolutionTime;
     private long deviceId;
 
     public static final String CREATE_TABLE =
             "CREATE TABLE " + TABLE_NAME + "("
                     + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + COLUMN_SEVERITY + " INTEGER,"
-                    + COLUMN_STATUS + " INTEGER,"
                     + COLUMN_TIME + " TEXT,"
+                    + COLUMN_SEVERITY + " INTEGER,"
+                    + COLUMN_RESOLUTION + " INTEGER,"
+                    + COLUMN_RESOLUTION_TIME + " TEXT,"
                     + COLUMN_DEVICE_ID + " INTEGER"
                     + ")";
 
@@ -35,33 +38,28 @@ public class Instance {
 
 
     public Instance(int severity, long deviceId) {
-        this(-1, severity, STATUS_UNRESOLVED, LocalDateTime.now().toString(), deviceId);
+        this(-1, LocalDateTime.now().toString(), severity, UNRESOLVED, LocalDateTime.MIN.toString(), deviceId);
     }
 
     /**
      * Constructor
      * @param id        Database ID
      * @param severity  UTI Severity
-     * @param status    Resolution status
+     * @param resolution    Resolution resolution
      * @param dateTime  DateTime of incident
      * @param deviceId  Database ID of device
      */
-    public Instance(int id, int severity, int status, String dateTime, long deviceId) {
+    public Instance(long id, String dateTime, int severity, int resolution, String resolutionTime, long deviceId) {
         this.id = id;
-        this.severity = severity;
-        this.status = status;
         this.dateTime = LocalDateTime.parse(dateTime);
+        this.severity = severity;
+        this.resolution = resolution;
+        this.resolutionTime = LocalDateTime.parse(resolutionTime);
         this.deviceId = deviceId;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
-    }
-    public int getSeverity() {
-        return severity;
-    }
-    public int getStatus() {
-        return status;
     }
     public LocalDateTime getDateTime() {
         return dateTime;
@@ -69,15 +67,41 @@ public class Instance {
     public String getDateTimeAsString() {
         return dateTime.toString();
     }
+    public int getSeverity() {
+        return severity;
+    }
+    public int getResolution() {
+        return resolution;
+    }
+    public LocalDateTime getResolutionTime() {
+        return resolutionTime;
+    }
+    public String getResolutionTimeAsString() {
+        return resolutionTime.toString();
+    }
     public long getDeviceId() {
         return  deviceId;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+    public void setSeverity(int severity) {
+        this.severity = severity;
+    }
+    public void setResolution(int resolution) {
+        this.resolution = resolution;
+    }
+    public void setResolutionTime() {
+        resolutionTime = LocalDateTime.now();
+    }
+
     public String toString() {
         return "id=" + id +
-                ", severity=" + severity +
-                ", status=" + status +
                 ", dateTime=" + dateTime +
+                ", severity=" + severity +
+                ", resolution=" + resolution +
+                ", resolutionTime=" + resolutionTime +
                 ", deviceId=" + deviceId;
     }
 }

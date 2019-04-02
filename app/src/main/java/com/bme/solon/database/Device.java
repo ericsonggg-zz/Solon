@@ -77,6 +77,10 @@ public class Device {
         return appName;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public String toString() {
         return "id=" + id +
                 ", name=" + name +

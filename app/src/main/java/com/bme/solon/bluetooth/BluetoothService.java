@@ -28,6 +28,9 @@ import com.bme.solon.MainActivity;
 import com.bme.solon.R;
 import com.bme.solon.database.DatabaseHelper;
 import com.bme.solon.database.Device;
+import com.bme.solon.database.Instance;
+import com.bme.solon.strip.StripReader;
+import com.bme.solon.strip.StripStatus;
 
 public class BluetoothService extends Service {
     public static final String THREAD_NAME = "BluetoothService";
@@ -56,6 +59,10 @@ public class BluetoothService extends Service {
     private BluetoothGattCharacteristic serialChar;
     private BluetoothGattCharacteristic commandChar;
     private BluetoothGattCharacteristic modelChar;
+
+    private StripStatus currentStatus;
+    private int statusResetCounter;
+    private Instance currentInstance;
 
     /**
      * Callback listener for an active connection.
@@ -165,7 +172,6 @@ public class BluetoothService extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
-            Log.v(TAG, "onCharacteristicChanged");
             processCharacteristic(characteristic.getValue());
         }
     };
@@ -187,7 +193,7 @@ public class BluetoothService extends Service {
                     Log.d(TAG,"onReceive: posting snooze task");
                     handler.postDelayed(() -> {
                         Log.d(TAG, "onReceive: running snooze task");
-                        notifyUser();
+                        notifyUser(false);
                     }, SNOOZE_DELAY_MILLIS);
                 case BluetoothAdapter.ACTION_STATE_CHANGED:
                     if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR) == BluetoothAdapter.STATE_ON) {
@@ -262,7 +268,7 @@ public class BluetoothService extends Service {
         serviceNotification = new NotificationCompat.Builder(this, NOTIFICATION_SERVICE_CHANNEL)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 //.setContentTitle(getText(R.string.app_name))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);       //TODO: add ticker & proper notification
+                .setPriority(NotificationCompat.PRIORITY_LOW);
         serviceNotification.setContentTitle(getString(btManager.isBluetoothOn() ? R.string.notif_service_disconnected : R.string.notif_service_bluetooth_off));
         startForeground(NOTIFICATION_SERVICE_ID, serviceNotification.build());
 
@@ -425,7 +431,8 @@ public class BluetoothService extends Service {
         handler.post(() -> {
             Log.d(TAG, "setDeviceToActive: running task with Device " + activeDevice.toString());
             if (db != null) {
-                db.addActiveDevice(device);
+                long id = db.addActiveDevice(device);
+                device.setId(id);
                 broadcastDevicesChanged();
             }
             else {
@@ -437,17 +444,50 @@ public class BluetoothService extends Service {
     /**
      * Parse characteristic value into a {@link com.bme.solon.strip.StripStatus} and submit into the database.
      * Alert all UI elements with a broadcast.
-     * @param value     Characteristic value.
+     * @param byteValue     Characteristic value.
      */
-    private void processCharacteristic(byte[] value) {
+    private void processCharacteristic(byte[] byteValue) {
+        String value = new String(byteValue);
+        StripStatus status = StripReader.readValue(value);
 
-        //TODO: replace with reading from StripStatus
-        if (false) {
-            notifyUser();
+        if (status != StripStatus.DRY) {
+            statusResetCounter = 0;
+            if (currentStatus == null || currentStatus == StripStatus.DRY) {
+                Log.i(TAG, "processCharacteristic: notifying the first time, is now " + status.name());
+                currentStatus = status;
+                notifyUser(false);
+                currentInstance = new Instance(status.getSeverity(), device.getId());
+                Long id = db.addInstance(currentInstance);
+                currentInstance.setId(id);
+            }
+            else if (currentStatus.isLessSevere(status)) {
+                Log.i(TAG, "processCharacteristic: strip is worse than last reading, is now " + status.name());
+                currentStatus = status;
+                notifyUser(true);
+                currentInstance.setSeverity(status.getSeverity());
+                currentInstance.setResolution(Instance.UNRESOLVED);
+                db.updateInstance(currentInstance);
+            }
+        }
+        else {
+            if (currentStatus != StripStatus.DRY) {
+                if (statusResetCounter != StripReader.STATUS_RESET_THRESHOLD) {
+                    statusResetCounter++;
+                }
+                else {
+                    Log.i(TAG, "processCharacteristic: new strip has been placed");
+                    statusResetCounter = 0;
+                    currentStatus = status;
+                    currentInstance.setResolution(Instance.RESOLVED);
+                    currentInstance.setResolutionTime();
+                    db.updateInstance(currentInstance);
+                    currentInstance = null;
+                }
+            }
         }
     }
 
-    private void notifyUser() {
+    private void notifyUser(boolean isEscalation) {
         Log.d(TAG, "notifyUser");
 
         //Fullscreen notification
@@ -466,8 +506,7 @@ public class BluetoothService extends Service {
         Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_INSTANCE_CHANNEL)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(getString(R.string.notif_incontinence_title))
-//                .setContentText(String.format(getString(R.string.notif_incontinence_message), device.getAppName()))
-                .setContentText(String.format(getString(R.string.notif_incontinence_message), "TEST_NAME"))
+                .setContentText(String.format(getString(isEscalation ? R.string.notif_incontinence_escalate_message : R.string.notif_incontinence_message), device.getAppName()))
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setVibrate(new long[] {1000})
                 .setLights(Color.RED, 3000, 3000)

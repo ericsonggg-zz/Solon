@@ -2,7 +2,6 @@ package com.bme.solon.database;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -10,16 +9,11 @@ import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 
-import com.bme.solon.bluetooth.BluetoothBroadcast;
-
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "DatabaseHelper";
@@ -29,10 +23,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private SQLiteDatabase writeDb;
 
     // Database Version
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 1;
 
     // Database Name
-    private static final String DATABASE_NAME = "Instance_db";
+    private static final String DATABASE_NAME = "Solon_db";
 
     /**
      * Private constructor
@@ -100,12 +94,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public long addInstance(Instance instance) {
         Log.v(TAG, "addInstance: " + instance.toString());
         ContentValues values = new ContentValues();
-        values.put(Instance.COLUMN_SEVERITY, instance.getSeverity());
-        values.put(Instance.COLUMN_STATUS, instance.getStatus());
         values.put(Instance.COLUMN_TIME, instance.getDateTimeAsString());
+        values.put(Instance.COLUMN_SEVERITY, instance.getSeverity());
+        values.put(Instance.COLUMN_RESOLUTION, instance.getResolution());
+        values.put(Instance.COLUMN_RESOLUTION_TIME, instance.getResolutionTimeAsString());
         values.put(Instance.COLUMN_DEVICE_ID, instance.getDeviceId());
 
         return writeDb.insert(Instance.TABLE_NAME, null, values);
+    }
+
+    /**
+     * Update the details of an instance in the table, if exists.
+     * @param instance  Instance with updated details
+     */
+    public void updateInstance(Instance instance) {
+        Log.v(TAG, "updateInstance: " + instance.toString());
+        ContentValues values = new ContentValues();
+        values.put(Instance.COLUMN_TIME, instance.getDateTimeAsString());
+        values.put(Instance.COLUMN_SEVERITY, instance.getSeverity());
+        values.put(Instance.COLUMN_RESOLUTION, instance.getResolution());
+        values.put(Instance.COLUMN_RESOLUTION_TIME, instance.getResolutionTimeAsString());
+        values.put(Instance.COLUMN_DEVICE_ID, instance.getDeviceId());
+
+        writeDb.update(Instance.TABLE_NAME, values, Instance.COLUMN_ID + "=?", new String[] {Long.toString(instance.getId())});
     }
 
     public Instance retrieveInstance(long id) {
@@ -113,7 +124,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = readDb;
 
         Cursor cursor = db.query(Instance.TABLE_NAME,
-                new String[]{Instance.COLUMN_ID, Instance.COLUMN_SEVERITY, Instance.COLUMN_STATUS, Instance.COLUMN_TIME},
+                new String[]{Instance.COLUMN_ID, Instance.COLUMN_SEVERITY, Instance.COLUMN_RESOLUTION, Instance.COLUMN_TIME},
                 Instance.COLUMN_ID + "=?",
                 new String[]{String.valueOf(id)}, null, null, null, null);
 
@@ -122,9 +133,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         Instance instance = new Instance(
                 cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
-                cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
-                cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)),
                 cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)),
+                cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
+                cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION)),
+                cursor.getString(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION_TIME)),
                 cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
 
         // close the cursor
@@ -146,9 +158,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 cursor.moveToFirst();
                 instance = new Instance(
                         cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
-                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
-                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)),
                         cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)),
+                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
+                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION)),
+                        cursor.getString(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION_TIME)),
                         cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
             }
             cursor.close();
@@ -171,9 +184,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             do {
                 Instance instance = new Instance(
                         cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
-                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
-                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)),
                         cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)),
+                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
+                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION)),
+                        cursor.getString(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION_TIME)),
                         cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
                 instances.add(instance);
             } while (cursor.moveToNext());
@@ -216,9 +230,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             do {
                 Instance instance = new Instance(
                         cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)),
-                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
-                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)),
                         cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)),
+                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)),
+                        cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION)),
+                        cursor.getString(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION_TIME)),
                         cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
                 instances.add(instance);
             } while (cursor.moveToNext());
@@ -235,7 +250,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(Instance.COLUMN_STATUS, 0);
+        values.put(Instance.COLUMN_RESOLUTION, 0);
 
         // updating row
         return db.update(Instance.TABLE_NAME, values, Instance.COLUMN_ID + " = ?",
@@ -463,7 +478,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     Log.v(TAG, "dumpDatabase: instance entry: " +
                             cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)) + " " +
                             cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)) + " " +
-                            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_STATUS)) + " " +
+                            cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION)) + " " +
                             cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)) + " " +
                             cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
                 } while (cursor.moveToNext());
