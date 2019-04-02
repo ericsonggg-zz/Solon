@@ -1,6 +1,9 @@
 package com.bme.solon;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
@@ -9,10 +12,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bme.solon.database.DatabaseHelper;
 import com.bme.solon.database.Device;
 import com.bme.solon.database.Instance;
+import com.bme.solon.strip.StripStatus;
 import com.tomerrosenfeld.customanalogclockview.CustomAnalogClock;
 
 import java.util.ArrayList;
@@ -32,10 +38,12 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
     public static class InstanceListViewHolder extends RecyclerView.ViewHolder {
         private ColorStateList themeTextColor;
         private TextView instanceResolution;
+        private ImageView instanceUTI;
         private CustomAnalogClock instanceAnalogClock; //https://github.com/rosenpin/custom-analog-clock-view
         private TextView instanceDigitalClock;
         private TextView instanceDevice;
         private TextView instanceDate;
+        private TextView instanceResolutionTime;
 
         /**
          * Constructor
@@ -46,11 +54,13 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
 
             //Find views
             instanceResolution = itemView.findViewById(R.id.home_instance_resolution);
+            instanceUTI = itemView.findViewById(R.id.home_instance_uti);
             instanceAnalogClock = itemView.findViewById(R.id.home_instance_analog_clock);
             instanceAnalogClock.setScale(0.45f);
             instanceDigitalClock = itemView.findViewById(R.id.home_instance_digital_clock);
             instanceDevice = itemView.findViewById(R.id.home_instance_device);
             instanceDate = itemView.findViewById(R.id.home_instance_date);
+            instanceResolutionTime = itemView.findViewById(R.id.home_instance_resolution_time);
 
             //Store default text color from theme
             themeTextColor = instanceResolution.getTextColors();
@@ -59,21 +69,32 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
         /**
          * Bind instance data to the appropriate TextViews.
          * Also attach listeners to the buttons
-         * @param instance    Device to show
+         * @param instance    Instance to show
+         * @param device      Supporting device
          */
         @SuppressLint("ResourceAsColor")
-        public void bindData(Instance instance, Device device, InstanceListListener listener) {
+        public void bindData(Instance instance, Device device) {
             Log.v(TAG, "bindData");
-            if (instance != null) {
+            if (instance != null && device != null) {
                 Log.v(TAG, "bindData: instance - " + instance.toString());
 
                 //Update instance views
                 if (instance.getResolution() == Instance.RESOLVED) {
                     instanceResolution.setText(R.string.home_instance_resolved);
                     instanceResolution.setTextColor(Color.rgb(103, 103, 103));
-                } else {
+                    Context context = instanceResolutionTime.getContext();
+                    instanceResolutionTime.setText(String.format(context.getString(R.string.home_instance_resolution_time), Instance.TIME_FORMAT.format(instance.getResolutionTime())));
+                }
+                else {
                     instanceResolution.setText(R.string.home_instance_unresolved);
                     instanceResolution.setTextColor(themeTextColor);
+                    instanceResolutionTime.setText(R.string.home_instance_default_resolution_time);
+                }
+                if (instance.getSeverity() == StripStatus.NO_UTI.getSeverity()) { //hide image if no uti
+                    instanceUTI.setVisibility(View.INVISIBLE);
+                }
+                else {
+                    instanceUTI.setVisibility(View.VISIBLE);
                 }
                 instanceDevice.setText(device.getAppName());
                 instanceAnalogClock.setTime(instance.getDateTimeAsCalendar());
@@ -98,22 +119,33 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
         }
 
         /**
-         * Try to connect with device
+         * Ask to resolve instance
          * @param view  View that was clicked
          */
         @Override
         public void onClick(View view) {
-            Log.d(TAG,"onClick");
-
             Instance instance = instanceList.get(position);
-            switch (view.getId()) {
-                case R.id.connect_pair_list_rename:
-                    Log.d(TAG, "onClick: rename instance " + instance.toString());
-                    break;
-                case R.id.connect_pair_list_connect:
-                    Log.d(TAG, "onClick: connect to instance " + instance.toString());
-                    //btService.connectToDevice(instance);
-                    break;
+            Log.v(TAG, "onClick");
+
+            if (instance.getResolution() == Instance.UNRESOLVED) {
+                Log.v(TAG, "onClick: unresolved " + instance.toString());
+                Device device = deviceList.get(instance.getDeviceId());
+                AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext())
+                        .setTitle(R.string.home_dialog_title)
+                        .setMessage(String.format(view.getContext().getString(R.string.home_dialog_message), device.getAppName(), instance.getDateTimeAsString()))
+                        .setCancelable(true)
+                        .setPositiveButton(R.string.yes, (dialogInterface, i) -> {
+                            Log.d(TAG, "onClick: resolving instance");
+                            instance.setResolution(Instance.RESOLVED);
+                            instance.setResolutionTime();
+
+                            DatabaseHelper db = DatabaseHelper.getInstance(view.getContext());
+                            db.updateInstance(instance);
+
+                            view.notify();
+                        })
+                        .setNegativeButton(R.string.cancel, null);
+                builder.create().show();
             }
         }
     }
@@ -149,7 +181,8 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
     @Override
     public void onBindViewHolder(@NonNull final InstanceListViewHolder holder, final int position) {
         Log.v(TAG, "onBindViewHolder: position " + position);
-        holder.bindData(instanceList.get(position), deviceList.get(instanceList.get(position).getDeviceId()), new InstanceListListener(position));
+        holder.bindData(instanceList.get(position), deviceList.get(instanceList.get(position).getDeviceId()));
+        holder.itemView.setOnClickListener(new InstanceListListener(position));
     }
 
     /**
