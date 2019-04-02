@@ -59,4 +59,17 @@
     <string name="connect_power_disconnected_message">Are you sure you want to disconnect?</string>
     <string name="connect_scan_title">Scanning for Solon&#8230;</string>
     <string name="connect_scan_no_name">Unknown Device</string>
+
+    <string name="analytics_risk_time_title">High Risk</string>
+    <string name="analytics_risk_time_default">12:00</string>
+    <string name="analytics_risk_time_subdefault">AM</string>
+    <string name="analytics_response_time_title">Avg. Response Time</string>
+    <string name="analytics_response_time_default">N/A</string>
+    <string name="analytics_response_time_subdefault">min</string>
+    <string name="analytics_incident_count_title">No. of Incidents</string>
+    <string name="analytics_incident_count_default">N/A</string>
+    <string name="analytics_incident_count_subdefault">/Month</string>
+    <string name="analytics_uti_count_title">No. of UTIs</string>
+    <string name="analytics_uti_count_default">N/A</string>
+    <string name="analytics_uti_count_subdefault">/Month</string>
 </resources>
