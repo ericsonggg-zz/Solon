@@ -79,8 +79,8 @@
     <string name="analytics_response_time_hrs">hrs</string>
     <string name="analytics_incident_count_title">No. of Incidents</string>
     <string name="analytics_incident_count_default">N/A</string>
-    <string name="analytics_incident_count_subdefault">/Month</string>
+    <string name="analytics_incident_count_subdefault">/ Month</string>
     <string name="analytics_uti_count_title">No. of UTIs</string>
     <string name="analytics_uti_count_default">N/A</string>
-    <string name="analytics_uti_count_subdefault">/Month</string>
+    <string name="analytics_uti_count_subdefault">/ Month</string>
 </resources>

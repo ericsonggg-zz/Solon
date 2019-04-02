@@ -351,7 +351,8 @@ public class AnalyticsFragment extends MainFragment {
         //Mark today
         Calendar todayCal = GregorianCalendar.getInstance();
         DateData today = new DateData(todayCal.get(Calendar.YEAR), todayCal.get(Calendar.MONTH)+1, todayCal.get(Calendar.DAY_OF_MONTH));
-        calendarView.markDate(today.setMarkStyle(MarkStyle.BACKGROUND, Color.BLUE));
+        //calendarView.markDate(today.setMarkStyle(MarkStyle.DOT, Color.rgb(255, 255, 255)));
+        calendarView.markDate(today.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(52, 52, 52)));
 
         //Mark all instances
         for (Instance instance : instances) {
@@ -359,16 +360,16 @@ public class AnalyticsFragment extends MainFragment {
             DateData data = new DateData(instanceDate.get(Calendar.YEAR), instanceDate.get(Calendar.MONTH)+1, instanceDate.get(Calendar.DAY_OF_MONTH));
 
             if (instance.getSeverity() == StripStatus.NO_UTI.getSeverity()) {
-                data.setMarkStyle(MarkStyle.DOT, Color.WHITE);
+                data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(125, 132, 131));
             }
             else if (instance.getSeverity() == StripStatus.LIGHT_UTI.getSeverity()) {
-                data.setMarkStyle(MarkStyle.BACKGROUND, Color.WHITE);
+                data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(71, 132, 125));
             }
             else if (instance.getSeverity() == StripStatus.MEDIUM_UTI.getSeverity()) {
-                data.setMarkStyle(MarkStyle.BACKGROUND, Color.YELLOW);
+                data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(43, 132, 122));
             }
             else {
-                data.setMarkStyle(MarkStyle.BACKGROUND, Color.RED);
+                data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(0, 211, 186));
             }
             calendarView.markDate(data);
         }
@@ -385,16 +386,16 @@ public class AnalyticsFragment extends MainFragment {
         DateData data = new DateData(instanceDate.get(Calendar.YEAR), instanceDate.get(Calendar.MONTH), instanceDate.get(Calendar.DAY_OF_MONTH));
 
         if (instance.getSeverity() == StripStatus.NO_UTI.getSeverity()) {
-            data.setMarkStyle(MarkStyle.DOT, Color.WHITE);
+            data.setMarkStyle(MarkStyle.DOT, Color.rgb(0, 211, 186));
         }
         else if (instance.getSeverity() == StripStatus.LIGHT_UTI.getSeverity()) {
-            data.setMarkStyle(MarkStyle.BACKGROUND, Color.WHITE);
+            data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(71, 71, 71));
         }
         else if (instance.getSeverity() == StripStatus.MEDIUM_UTI.getSeverity()) {
-            data.setMarkStyle(MarkStyle.BACKGROUND, Color.YELLOW);
+            data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(124, 124, 124));
         }
         else {
-            data.setMarkStyle(MarkStyle.BACKGROUND, Color.RED);
+            data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(170, 170, 170));
         }
         calendarView.markDate(data);
     }
