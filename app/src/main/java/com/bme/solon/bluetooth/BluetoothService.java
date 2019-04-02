@@ -541,7 +541,7 @@ public class BluetoothService extends Service {
     private void broadcastConnecting (Device device) {
         Log.d(TAG, "broadcastConnecting: device " + device.getName() + " " + device.getAddress());
         final Intent intent = new Intent(BluetoothBroadcast.ACTION_CONNECTING);
-        intent.putExtra(BluetoothBroadcast.KEY_DEVICE_NAME, device.getName());
+        intent.putExtra(BluetoothBroadcast.KEY_DEVICE_NAME, device.getAppName());
         intent.putExtra(BluetoothBroadcast.KEY_DEVICE_ADDRESS, device.getAddress());
         sendBroadcast(intent);
     }
@@ -555,7 +555,7 @@ public class BluetoothService extends Service {
     private void broadcastConnected(Device device) {
         Log.d(TAG, "broadcastConnected: device " + device.getName() + " " + device.getAddress());
         final Intent intent = new Intent(BluetoothBroadcast.ACTION_CONNECTED);
-        intent.putExtra(BluetoothBroadcast.KEY_DEVICE_NAME, device.getName());
+        intent.putExtra(BluetoothBroadcast.KEY_DEVICE_NAME, device.getAppName());
         sendBroadcast(intent);
     }
 
