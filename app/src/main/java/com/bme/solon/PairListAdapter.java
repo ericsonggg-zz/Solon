@@ -226,6 +226,18 @@ public class PairListAdapter extends RecyclerView.Adapter<PairListAdapter.PairLi
         }
     }
 
+    public void updateDevice(Device device) {
+        Log.v(TAG, "updateDevice: " + device.toString());
+        if (device != null && device.getId() != -1) {
+            for (Device storedDevice : deviceList) {
+                if (storedDevice != null && storedDevice.getId() == device.getId()) {
+                    storedDevice = device;
+                    break;
+                }
+            }
+        }
+    }
+
     /**
      * Delete all Devices and add the new list
      * @param devices   New device list

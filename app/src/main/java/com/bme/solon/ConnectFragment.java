@@ -204,6 +204,9 @@ public class ConnectFragment extends MainFragment {
                 if (id != -1 && activeDevice != null && activeDevice.getId() == id) {
                     activeNameView.setText(activeDevice.getAppName());
                 }
+                Device updatedDevice = db.getDevice(id);
+                pairAdapter.updateDevice(updatedDevice);
+                pairAdapter.notifyDataSetChanged();
                 break;
         }
     }
