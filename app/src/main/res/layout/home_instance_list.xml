@@ -2,52 +2,119 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="@drawable/bg"
     android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/home_instance_uti"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="13dp"
+        app:layout_constraintStart_toEndOf="@+id/home_instance_resolution"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_baseline_bug_report" />
 
     <TextView
         android:id="@+id/home_instance_resolution"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="10dp"
+        android:fontFamily="sans-serif-condensed-light"
         android:text="@string/home_instance_default_resolution"
-        android:textAppearance="@android:style/TextAppearance.Material.Large"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:textColor="@color/white"
+        android:textSize="20dp"
+        app:layout_constraintStart_toEndOf="@+id/home_instance_analog_clock"
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.tomerrosenfeld.customanalogclockview.CustomAnalogClock
         android:id="@+id/home_instance_analog_clock"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="12dp"
         app:default_watchface="true"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/home_instance_resolution" />
+        app:layout_constraintTop_toTopOf="parent" />
+
 
     <TextView
         android:id="@+id/home_instance_device"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="17dp"
+        android:fontFamily="sans-serif-condensed-light"
         android:text="@string/home_instance_default_device"
-        app:layout_constraintBottom_toTopOf="@+id/home_instance_digital_clock"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/home_instance_resolution" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/home_instance_analog_clock"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/home_instance_digital_clock" />
 
     <TextView
         android:id="@+id/home_instance_digital_clock"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginRight="15dp"
+        android:textColor="@color/darkTeal"
+        android:fontFamily="sans-serif-condensed"
         android:text="@string/home_instance_default_time"
-        app:layout_constraintBottom_toTopOf="@+id/home_instance_date"
+        android:textSize="42dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/home_instance_analog_clock"
-        app:layout_constraintTop_toBottomOf="@+id/home_instance_device" />
+        app:layout_constraintTop_toBottomOf="@+id/home_instance_resolution" />
 
+    <!--<TextView-->
+        <!--android:id="@+id/divider2"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="17dp"-->
+        <!--android:layout_marginStart="5dp"-->
+        <!--android:layout_marginTop="4dp"-->
+        <!--android:layout_marginBottom="15dp"-->
+        <!--android:fontFamily="sans-serif-condensed-light"-->
+        <!--android:text="|"-->
+        <!--app:layout_constraintBottom_toBottomOf="parent"-->
+        <!--app:layout_constraintStart_toEndOf="@+id/home_instance_device"-->
+        <!--app:layout_constraintTop_toBottomOf="@+id/home_instance_digital_clock" />-->
+
+    <TextView
+        android:id="@+id/home_instance_resolved"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="15dp"
+        android:fontFamily="sans-serif-condensed-light"
+        android:text="End Time: Unresolved"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/home_instance_date"
+        app:layout_constraintTop_toBottomOf="@+id/home_instance_digital_clock" />
+
+    <TextView
+        android:id="@+id/divider"
+        android:layout_width="wrap_content"
+        android:layout_height="17dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="15dp"
+        android:fontFamily="sans-serif-condensed-light"
+        android:text="|"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/home_instance_date"
+        app:layout_constraintTop_toBottomOf="@+id/home_instance_digital_clock" />
     <TextView
         android:id="@+id/home_instance_date"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="17dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="15dp"
+        android:fontFamily="sans-serif-condensed-light"
         android:text="@string/home_instance_default_date"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/home_instance_analog_clock"
+        app:layout_constraintTop_toBottomOf="@+id/home_instance_digital_clock" />
 </android.support.constraint.ConstraintLayout>

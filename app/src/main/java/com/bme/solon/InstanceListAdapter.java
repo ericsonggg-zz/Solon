@@ -1,5 +1,6 @@
 package com.bme.solon;
 
+import android.annotation.SuppressLint;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
@@ -46,7 +47,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
             //Find views
             instanceResolution = itemView.findViewById(R.id.home_instance_resolution);
             instanceAnalogClock = itemView.findViewById(R.id.home_instance_analog_clock);
-            instanceAnalogClock.setScale(0.75f);
+            instanceAnalogClock.setScale(0.45f);
             instanceDigitalClock = itemView.findViewById(R.id.home_instance_digital_clock);
             instanceDevice = itemView.findViewById(R.id.home_instance_device);
             instanceDate = itemView.findViewById(R.id.home_instance_date);
@@ -60,6 +61,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
          * Also attach listeners to the buttons
          * @param instance    Device to show
          */
+        @SuppressLint("ResourceAsColor")
         public void bindData(Instance instance, Device device, InstanceListListener listener) {
             Log.v(TAG, "bindData");
             if (instance != null) {
@@ -68,10 +70,10 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
                 //Update instance views
                 if (instance.getResolution() == Instance.RESOLVED) {
                     instanceResolution.setText(R.string.home_instance_resolved);
-                    instanceResolution.setTextColor(themeTextColor);
+                    instanceResolution.setTextColor(Color.rgb(93, 93, 93));
                 } else {
                     instanceResolution.setText(R.string.home_instance_unresolved);
-                    instanceResolution.setTextColor(Color.RED);
+                    instanceResolution.setTextColor(themeTextColor);
                 }
                 instanceDevice.setText(device.getAppName());
                 //instanceAnalogClock.set
