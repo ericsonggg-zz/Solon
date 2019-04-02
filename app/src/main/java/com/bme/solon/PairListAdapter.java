@@ -1,5 +1,9 @@
 package com.bme.solon;
 
+import android.app.AlertDialog;
+import android.bluetooth.BluetoothProfile;
+import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.RecyclerView;
@@ -7,9 +11,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.bme.solon.bluetooth.BluetoothBroadcast;
 import com.bme.solon.bluetooth.BluetoothService;
+import com.bme.solon.database.DatabaseHelper;
 import com.bme.solon.database.Device;
 
 import java.util.ArrayList;
@@ -85,16 +93,66 @@ public class PairListAdapter extends RecyclerView.Adapter<PairListAdapter.PairLi
          */
         @Override
         public void onClick(View view) {
-            Log.d(TAG,"onClick");
+            Log.v(TAG,"onClick");
 
             Device device = deviceList.get(position);
+            Context context = view.getContext();
             switch (view.getId()) {
                 case R.id.connect_pair_list_rename:
                     Log.d(TAG, "onClick: rename device " + device.toString());
+                    EditText renameEdit = new EditText(context);
+                    AlertDialog.Builder renameBuilder = new AlertDialog.Builder(context)
+                            .setTitle(String.format(view.getContext().getString(R.string.connect_rename_title), device.getAppName()))
+                            .setView(renameEdit)
+                            .setCancelable(true)
+                            .setPositiveButton(R.string.okay, (dialogInterface, i) -> {
+                                if (renameEdit.getText().toString().isEmpty()) {
+                                    Log.w(TAG, "onClick: rename is empty, not renaming");
+                                    Toast.makeText(context, R.string.connect_rename_invalid, Toast.LENGTH_SHORT);
+                                }
+                                else {
+                                    Log.d(TAG, "onClick: rename device to " + renameEdit.getText().toString());
+                                    device.setAppName(renameEdit.getText().toString());
+                                    DatabaseHelper db = DatabaseHelper.getInstance(context);
+                                    db.updateAppName(device);
+
+                                    Intent intent = new Intent(BluetoothBroadcast.ACTION_DEVICE_UPDATED);
+                                    intent.putExtra(BluetoothBroadcast.KEY_DEVICE_ID, device.getId());
+                                    context.sendBroadcast(intent);
+                                }
+                            })
+                            .setNegativeButton(R.string.cancel, null);
+                    renameBuilder.create().show();
                     break;
                 case R.id.connect_pair_list_connect:
-                    Log.d(TAG, "onClick: connect to device " + device.toString());
-                    //btService.connectToDevice(device);
+                    Log.d(TAG, "onClick: connect");
+                    AlertDialog.Builder connectBuilder = new AlertDialog.Builder(context)
+                            .setTitle(String.format(context.getString(R.string.connect_connect_title), device.getAppName()))
+                            .setCancelable(true)
+                            .setPositiveButton(R.string.yes, (dialogInterface, i) -> {
+                                Log.d(TAG, "onClick: connect to device " + device.toString());
+                                if (btService != null) {
+                                    btService.connectToDevice(device);
+                                }
+                                else {
+                                    Toast.makeText(context, R.string.something_went_wrong, Toast.LENGTH_LONG).show();
+                                }
+                            })
+                            .setNegativeButton(R.string.no, null);
+                    if (btService != null) {
+                        if (btService.getGattStatus() == BluetoothProfile.STATE_DISCONNECTED) {
+                            connectBuilder.setMessage(String.format(context.getString(R.string.connect_connect_message_disconnected), device.getAppName()));
+                        }
+                        else {
+                            connectBuilder.setMessage(R.string.connect_connect_message_streaming);
+                        }
+                        if (btService.isBluetoothOn()) {
+                            connectBuilder.create().show();
+                        }
+                        else {
+                            Toast.makeText(context, R.string.bluetooth_is_off, Toast.LENGTH_SHORT).show();
+                        }
+                    }
                     break;
             }
         }

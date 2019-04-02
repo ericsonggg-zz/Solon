@@ -197,6 +197,14 @@ public class ConnectFragment extends MainFragment {
                     }
                 }
                 break;
+            case BluetoothBroadcast.ACTION_DEVICE_UPDATED:
+                long id = intent.getLongExtra(BluetoothBroadcast.KEY_DEVICE_ID, -1);
+                db = DatabaseHelper.getInstance(getActivity());
+                Device activeDevice = db.getActiveDevice();
+                if (id != -1 && activeDevice != null && activeDevice.getId() == id) {
+                    activeNameView.setText(activeDevice.getAppName());
+                }
+                break;
         }
     }
 
