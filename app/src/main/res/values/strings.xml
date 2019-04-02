@@ -68,7 +68,7 @@
     <string name="connect_rename_invalid">The entered name is invalid</string>
     <string name="connect_connect_title">Connect to %1$s</string>
     <string name="connect_connect_message_streaming">There is an acive connection. Do you still want to change connections?</string>
-    <string name="connecT_connect_message_disconnected">Do you want to connect to %1$s</string>
+    <string name="connect_connect_message_disconnected">Do you want to connect to %1$s</string>
 
     <string name="analytics_risk_time_title">High Risk</string>
     <string name="analytics_risk_time_default">12:00</string>

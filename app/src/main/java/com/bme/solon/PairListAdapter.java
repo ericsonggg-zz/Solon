@@ -1,6 +1,7 @@
 package com.bme.solon;
 
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -124,8 +125,34 @@ public class PairListAdapter extends RecyclerView.Adapter<PairListAdapter.PairLi
                     renameBuilder.create().show();
                     break;
                 case R.id.connect_pair_list_connect:
-                    Log.d(TAG, "onClick: connect to device " + device.toString());
-                    //btService.connectToDevice(device);
+                    Log.d(TAG, "onClick: connect");
+                    AlertDialog.Builder connectBuilder = new AlertDialog.Builder(context)
+                            .setTitle(String.format(context.getString(R.string.connect_connect_title), device.getAppName()))
+                            .setCancelable(true)
+                            .setPositiveButton(R.string.yes, (dialogInterface, i) -> {
+                                Log.d(TAG, "onClick: connect to device " + device.toString());
+                                if (btService != null) {
+                                    btService.connectToDevice(device);
+                                }
+                                else {
+                                    Toast.makeText(context, R.string.something_went_wrong, Toast.LENGTH_LONG).show();
+                                }
+                            })
+                            .setNegativeButton(R.string.no, null);
+                    if (btService != null) {
+                        if (btService.getGattStatus() == BluetoothProfile.STATE_DISCONNECTED) {
+                            connectBuilder.setMessage(String.format(context.getString(R.string.connect_connect_message_disconnected), device.getAppName()));
+                        }
+                        else {
+                            connectBuilder.setMessage(R.string.connect_connect_message_streaming);
+                        }
+                        if (btService.isBluetoothOn()) {
+                            connectBuilder.create().show();
+                        }
+                        else {
+                            Toast.makeText(context, R.string.bluetooth_is_off, Toast.LENGTH_SHORT).show();
+                        }
+                    }
                     break;
             }
         }
