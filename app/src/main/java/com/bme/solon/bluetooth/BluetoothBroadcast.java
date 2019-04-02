@@ -7,6 +7,8 @@ import android.content.IntentFilter;
  * Constants class for broadcast intents sent by {@link BluetoothService}.
  */
 public class BluetoothBroadcast {
+    public static final String ACTION_SERVICE_BOUND = "com.bme.solon.ACTION_SERVICE_BOUND";
+    public static final String ACTION_SERVICE_DISCONNECTED = "com.bme.solon.ACTION_SERVICE_DISCONNECTED";
     public static final String ACTION_CONNECTING = "com.bme.solon.ACTION_CONNECTING";
     public static final String ACTION_CONNECTED = "com.bme.solon.ACTION_CONNECTED";
     public static final String ACTION_CONNECTED_UPDATE = "com.bme.solon.ACTION_CONNECTED_UPDATE";
@@ -38,6 +40,8 @@ public class BluetoothBroadcast {
         filter.addAction(BluetoothBroadcast.ACTION_DEVICES_CHANGED);
         filter.addAction(BluetoothBroadcast.ACTION_NEW_INSTANCE);
         filter.addAction(BluetoothBroadcast.ACTION_INSTANCE_UPDATE);
+        filter.addAction(BluetoothBroadcast.ACTION_SERVICE_BOUND);
+        filter.addAction(BluetoothBroadcast.ACTION_SERVICE_DISCONNECTED);
         return filter;
     }
 }

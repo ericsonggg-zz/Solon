@@ -159,7 +159,6 @@ public class ConnectFragment extends MainFragment {
                 activeStatusView.setText(getText(R.string.status_connecting));
                 break;
             case BluetoothBroadcast.ACTION_CONNECTED:
-                break;
             case BluetoothBroadcast.ACTION_CONNECTED_UPDATE:
                 activeStatusView.setText(getText(R.string.status_connected));
                 break;
@@ -171,6 +170,32 @@ public class ConnectFragment extends MainFragment {
                 DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
                 pairAdapter.resetDevices(db.getPairedDevices());
                 pairAdapter.notifyDataSetChanged();
+                break;
+            case BluetoothBroadcast.ACTION_SERVICE_BOUND:
+            case BluetoothBroadcast.ACTION_SERVICE_DISCONNECTED:
+                if (isServiceBound) {
+                    if (!btService.isBluetoothOn()) {
+                        activeNameView.setText(getText(R.string.status_disconnected_device));
+                        activeStatusView.setText(getText(R.string.status_bluetooth_off));
+                    }
+                    else {
+                        Device device = btService.getConnectedDevice();
+                        switch (btService.getGattStatus()) {
+                            case BluetoothProfile.STATE_DISCONNECTED:
+                                activeNameView.setText(getText(R.string.status_disconnected_device));
+                                activeStatusView.setText(getText(R.string.status_disconnected));
+                                break;
+                            case BluetoothProfile.STATE_CONNECTING:
+                                activeNameView.setText(device.getAppName());
+                                activeStatusView.setText(getText(R.string.status_connecting));
+                                break;
+                            case BluetoothProfile.STATE_CONNECTED:
+                                activeNameView.setText(device.getAppName());
+                                activeStatusView.setText(getText(R.string.status_connected));
+                                break;
+                        }
+                    }
+                }
                 break;
         }
     }

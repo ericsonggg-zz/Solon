@@ -168,7 +168,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
      */
     public void addInstance(Instance instance, Device device) {
         Log.v(TAG, "addInstance");
-        if (!instanceList.contains(instance)) {
+        if (!instanceList.contains(instance) && device != null) {
             Log.d(TAG, "addInstance: new instance " + instance.toString() + " added");
             instanceList.add(instance);
             deviceList.put(device.getId(), device);

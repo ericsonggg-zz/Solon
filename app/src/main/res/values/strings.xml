@@ -14,7 +14,7 @@
     <string name="status_connecting">Connecting</string>
     <string name="status_connected">Connected</string>
     <string name="status_disconnected">Disconnected</string>
-    <string name="status_disconnected_device">JOHN\'S DEVICE</string>
+    <string name="status_disconnected_device">No Device</string>
     <string name="status_bluetooth_off">Bluetooth is off</string>
 
     <string name="bluno">Bluno</string>

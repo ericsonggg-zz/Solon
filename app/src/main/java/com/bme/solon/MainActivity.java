@@ -131,6 +131,10 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "onServiceConnected: " + componentName.flattenToString());
                 BluetoothService.Binder binder = (BluetoothService.Binder) iBinder;
                 currentFragment.onServiceConnected(binder.getService());
+
+                //Broadcast status change
+                final Intent intent = new Intent(BluetoothBroadcast.ACTION_SERVICE_BOUND);
+                sendBroadcast(intent);
             }
 
             /**
@@ -141,6 +145,10 @@ public class MainActivity extends AppCompatActivity {
             public void onServiceDisconnected(ComponentName componentName) {
                 Log.d(TAG, "onServiceDisconnected: " + componentName.flattenToString());
                 currentFragment.onServiceDisconnected();
+
+                //Broadcast status change
+                final Intent intent = new Intent(BluetoothBroadcast.ACTION_SERVICE_DISCONNECTED);
+                sendBroadcast(intent);
             }
         };
 
