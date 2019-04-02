@@ -76,7 +76,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
                     instanceResolution.setTextColor(themeTextColor);
                 }
                 instanceDevice.setText(device.getAppName());
-                //instanceAnalogClock.set
+                instanceAnalogClock.setTime(instance.getDateTimeAsCalendar());
                 instanceDigitalClock.setText(Instance.TIME_FORMAT.format(instance.getDateTime()));
                 instanceDate.setText(Instance.DATE_FORMAT.format(instance.getDateTime()));
             }
