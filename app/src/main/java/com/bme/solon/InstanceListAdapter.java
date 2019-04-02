@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bme.solon.bluetooth.BluetoothBroadcast;
 import com.bme.solon.database.DatabaseHelper;
 import com.bme.solon.database.Device;
 import com.bme.solon.database.Instance;
@@ -142,7 +143,9 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
                             DatabaseHelper db = DatabaseHelper.getInstance(view.getContext());
                             db.updateInstance(instance);
 
-                            view.notify();
+                            Intent intent = new Intent(BluetoothBroadcast.ACTION_INSTANCE_UPDATE);
+                            intent.putExtra(BluetoothBroadcast.KEY_INSTANCE_ID, instance.getId());
+                            view.getContext().sendBroadcast(intent);
                         })
                         .setNegativeButton(R.string.cancel, null);
                 builder.create().show();
