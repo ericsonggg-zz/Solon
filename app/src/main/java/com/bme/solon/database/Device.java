@@ -80,6 +80,9 @@ public class Device {
     public void setId(long id) {
         this.id = id;
     }
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
 
     public String toString() {
         return "id=" + id +

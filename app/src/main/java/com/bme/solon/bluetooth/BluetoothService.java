@@ -221,6 +221,21 @@ public class BluetoothService extends Service {
                     serviceNotification.setContentTitle(String.format(getString(R.string.notif_service_connected),device.getAppName()));
                     notificationManagerCompat.notify(NOTIFICATION_SERVICE_ID, serviceNotification.build());
                     break;
+                case BluetoothBroadcast.ACTION_DEVICE_UPDATED:
+                    long id = intent.getLongExtra(BluetoothBroadcast.KEY_DEVICE_ID, -1);
+                    if (device != null && id != -1 && device.getId() == id) {
+                        Log.d(TAG, "onReceive: renaming device");
+                        device = db.getDevice(id);
+                        if (gattStatus == BluetoothProfile.STATE_CONNECTING) {
+                            serviceNotification.setContentTitle(String.format(getString(R.string.notif_service_connecting), device.getAppName()));
+                            notificationManagerCompat.notify(NOTIFICATION_SERVICE_ID, serviceNotification.build());
+                        }
+                        else if (gattStatus == BluetoothProfile.STATE_CONNECTED) {
+                            serviceNotification.setContentTitle(String.format(getString(R.string.notif_service_connected), device.getAppName()));
+                            notificationManagerCompat.notify(NOTIFICATION_SERVICE_ID, serviceNotification.build());
+                        }
+                    }
+                    break;
             }
         }
     };
@@ -267,7 +282,6 @@ public class BluetoothService extends Service {
         //start foreground
         serviceNotification = new NotificationCompat.Builder(this, NOTIFICATION_SERVICE_CHANNEL)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                //.setContentTitle(getText(R.string.app_name))
                 .setPriority(NotificationCompat.PRIORITY_LOW);
         serviceNotification.setContentTitle(getString(btManager.isBluetoothOn() ? R.string.notif_service_disconnected : R.string.notif_service_bluetooth_off));
         startForeground(NOTIFICATION_SERVICE_ID, serviceNotification.build());
