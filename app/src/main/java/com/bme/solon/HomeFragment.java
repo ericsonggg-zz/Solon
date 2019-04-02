@@ -57,10 +57,7 @@ public class HomeFragment extends MainFragment {
         //Populate instanceList
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
         List<Instance> instances = db.getAllInstances();
-        List<Device> devices = new ArrayList<>();
-        for (Instance instance : instances) {
-            devices.add(db.getDevice(instance.getDeviceId()));
-        }
+        List<Device> devices = db.getPairedDevices();
         instanceListAdapter.addInstances(instances, devices);
         instanceListAdapter.notifyDataSetChanged();
     }
@@ -68,10 +65,10 @@ public class HomeFragment extends MainFragment {
     @Override
     protected void receiveBroadcast(Intent intent) {
         DatabaseHelper db = DatabaseHelper.getInstance(getActivity());
+        long id = intent.getLongExtra(BluetoothBroadcast.KEY_INSTANCE_ID, -1);
 
         switch (intent.getAction()) {
             case BluetoothBroadcast.ACTION_NEW_INSTANCE:
-                long id = intent.getLongExtra(BluetoothBroadcast.KEY_INSTANCE_ID, -1);
                 if (id != -1) {
                     Instance instance = db.retrieveInstance(id);
                     Device device = db.getDevice(instance.getId());
@@ -80,6 +77,13 @@ public class HomeFragment extends MainFragment {
                 }
                 break;
             case BluetoothBroadcast.ACTION_INSTANCE_UPDATE:
+                if (id != -1) {
+                    Instance instance = db.retrieveInstance(id);
+                    Device device = db.getDevice(instance.getDeviceId());
+                    instanceListAdapter.updateInstance(instance, device);
+                    instanceListAdapter.notifyDataSetChanged();
+                }
+                break;
         }
     }
 }

@@ -30,8 +30,16 @@ public class ChangeActivityAsync extends AsyncTask<Void, Void, Void> {
      */
     @Override
     protected Void doInBackground(Void... v) {
+        boolean finished = false;
         while(!isCancelled()) {
-            if (tasks.stream().allMatch(t -> t.getStatus() == Status.FINISHED)){
+            finished = true;
+            for (int i = 0; i < tasks.size() ; i++) {
+                if (!tasks.get(i).isCancelled()) {
+                    finished = false;
+                }
+            }
+
+            if (finished) {
                 break;
             }
         }

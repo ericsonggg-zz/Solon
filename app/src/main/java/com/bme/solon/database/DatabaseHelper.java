@@ -490,9 +490,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 do {
                     Log.v(TAG, "dumpDatabase: instance entry: " +
                             cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_ID)) + " " +
+                            cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)) + " " +
                             cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_SEVERITY)) + " " +
                             cursor.getInt(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION)) + " " +
-                            cursor.getString(cursor.getColumnIndex(Instance.COLUMN_TIME)) + " " +
+                            cursor.getString(cursor.getColumnIndex(Instance.COLUMN_RESOLUTION_TIME)) + " " +
                             cursor.getLong(cursor.getColumnIndex(Instance.COLUMN_DEVICE_ID)));
                 } while (cursor.moveToNext());
             }

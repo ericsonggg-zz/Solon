@@ -15,13 +15,15 @@ import com.bme.solon.database.Instance;
 import com.tomerrosenfeld.customanalogclockview.CustomAnalogClock;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapter.InstanceListViewHolder> {
     private static final String TAG = "InstanceListAdapter";
 
     private List<Instance> instanceList;
-    private List<Device> deviceList;
+    private Map<Long, Device> deviceList;
 
     /**
      * ViewHolder specific for scanned devices.
@@ -73,8 +75,8 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
                 }
                 instanceDevice.setText(device.getAppName());
                 //instanceAnalogClock.set
-                instanceDigitalClock.setText(instance.getDateTime().format(Instance.TIME_FORMAT));
-                instanceDate.setText(instance.getDateTime().format(Instance.DATE_FORMAT));
+                instanceDigitalClock.setText(Instance.TIME_FORMAT.format(instance.getDateTime()));
+                instanceDate.setText(Instance.DATE_FORMAT.format(instance.getDateTime()));
             }
         }
     }
@@ -120,7 +122,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
     public InstanceListAdapter() {
         super();
         instanceList = new ArrayList<>();
-        deviceList = new ArrayList<>();
+        deviceList = new HashMap<>();
     }
 
     /**
@@ -145,7 +147,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
     @Override
     public void onBindViewHolder(@NonNull final InstanceListViewHolder holder, final int position) {
         Log.v(TAG, "onBindViewHolder: position " + position);
-        holder.bindData(instanceList.get(position), deviceList.get(position), new InstanceListListener(position));
+        holder.bindData(instanceList.get(position), deviceList.get(instanceList.get(position).getDeviceId()), new InstanceListListener(position));
     }
 
     /**
@@ -167,7 +169,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
         if (!instanceList.contains(instance)) {
             Log.d(TAG, "addInstance: new instance " + instance.toString() + " added");
             instanceList.add(instance);
-            deviceList.add(device);
+            deviceList.put(device.getId(), device);
         }
     }
 
@@ -177,8 +179,24 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
      */
     public void addInstances(List<Instance> instances, List<Device> devices) {
         Log.v(TAG, "addInstances: # = " + instances.size());
-        for (int i = 0; i < instances.size(); i++) {
-            addInstance(instances.get(i), devices.get(i));
+        for (Instance instance : instances) {
+            if (!instanceList.contains(instance)) {
+                if (deviceList.containsKey(instance.getDeviceId())) {
+                    Log.d(TAG, "addInstance: add only instance " + instance.toString());
+                    instanceList.add(instance);
+                }
+                else {
+                    Log.d(TAG, "HMM " + devices.size());
+                    for (Device device : devices) {
+                        Log.d(TAG, "TESTING");
+                        if (device.getId() == instance.getDeviceId()) {
+                            Log.d(TAG, "addInstance: add instance " + instance.toString() + " and device " + device.toString());
+                            instanceList.add(instance);
+                            deviceList.put(device.getId(), device);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -186,7 +204,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
         Log.v(TAG, "updateInstance: " + instance.toString());
         if (instanceList.contains(instance)) {
             Log.v(TAG, "updateInstance: found old instance");
-
+            //Instance oldInstance = instanceList.
         }
     }
 }
