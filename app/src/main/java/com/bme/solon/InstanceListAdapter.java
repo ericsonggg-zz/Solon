@@ -168,7 +168,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
         Log.v(TAG, "addInstance");
         if (!instanceList.contains(instance)) {
             Log.d(TAG, "addInstance: new instance " + instance.toString() + " added");
-            instanceList.add(instance);
+            instanceList.add(0, instance);
             deviceList.put(device.getId(), device);
         }
     }
@@ -183,15 +183,13 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
             if (!instanceList.contains(instance)) {
                 if (deviceList.containsKey(instance.getDeviceId())) {
                     Log.d(TAG, "addInstance: add only instance " + instance.toString());
-                    instanceList.add(instance);
+                    instanceList.add(0, instance);
                 }
                 else {
-                    Log.d(TAG, "HMM " + devices.size());
                     for (Device device : devices) {
-                        Log.d(TAG, "TESTING");
                         if (device.getId() == instance.getDeviceId()) {
                             Log.d(TAG, "addInstance: add instance " + instance.toString() + " and device " + device.toString());
-                            instanceList.add(instance);
+                            instanceList.add(0, instance);
                             deviceList.put(device.getId(), device);
                         }
                     }
@@ -200,11 +198,20 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
         }
     }
 
-    public void updateInstance(Instance instance, Device device) {
+    /**
+     * Update an existing instance's details
+     * @param instance  Instance to update
+     */
+    public void updateInstance(Instance instance) {
         Log.v(TAG, "updateInstance: " + instance.toString());
-        if (instanceList.contains(instance)) {
-            Log.v(TAG, "updateInstance: found old instance");
-            //Instance oldInstance = instanceList.
+        for (Instance oldInstance : instanceList)
+        {
+            if (oldInstance.getId() == instance.getId()) {
+                Log.v(TAG, "updateInstance: found old instance");
+                oldInstance.setSeverity(instance.getSeverity());
+                oldInstance.setResolution(instance.getResolution());
+                oldInstance.setResolutionTime(instance.getResolutionTime());
+            }
         }
     }
 }

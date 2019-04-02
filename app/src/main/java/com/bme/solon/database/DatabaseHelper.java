@@ -160,7 +160,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         Cursor cursor = readDb.query(Instance.TABLE_NAME,
                 null,null,null,null, null,
-                Instance.COLUMN_ID + " DESC", "1");
+                Instance.COLUMN_ID + " ASC", "1");
 
         if (cursor != null) {
             if (cursor.getCount() > 0) {
@@ -188,7 +188,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         List<Instance> instances = new ArrayList<>();
 
         Cursor cursor = readDb.query(Instance.TABLE_NAME,
-                null,null,null, null, null, Instance.COLUMN_TIME + " DESC", null);
+                null,null,null, null, null, Instance.COLUMN_ID + " ASC", null);
 
         if (cursor != null) {
             if (cursor.getCount() > 0) {

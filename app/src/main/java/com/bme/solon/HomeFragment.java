@@ -71,7 +71,7 @@ public class HomeFragment extends MainFragment {
             case BluetoothBroadcast.ACTION_NEW_INSTANCE:
                 if (id != -1) {
                     Instance instance = db.retrieveInstance(id);
-                    Device device = db.getDevice(instance.getId());
+                    Device device = db.getDevice(instance.getDeviceId());
                     instanceListAdapter.addInstance(instance, device);
                     instanceListAdapter.notifyDataSetChanged();
                 }
@@ -79,8 +79,7 @@ public class HomeFragment extends MainFragment {
             case BluetoothBroadcast.ACTION_INSTANCE_UPDATE:
                 if (id != -1) {
                     Instance instance = db.retrieveInstance(id);
-                    Device device = db.getDevice(instance.getDeviceId());
-                    instanceListAdapter.updateInstance(instance, device);
+                    instanceListAdapter.updateInstance(instance);
                     instanceListAdapter.notifyDataSetChanged();
                 }
                 break;

@@ -105,6 +105,9 @@ public class Instance {
     public void setResolutionTime() {
         resolutionTime = Calendar.getInstance();
     }
+    public void setResolutionTime(Date resolutionTime) {
+        this.resolutionTime.setTime(resolutionTime);
+    }
 
     public String toString() {
         return "id=" + id +
