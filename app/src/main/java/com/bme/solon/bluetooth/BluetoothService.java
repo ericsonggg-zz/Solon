@@ -83,7 +83,12 @@ public class BluetoothService extends Service {
             else {
                 Log.d(TAG, "onConnectionStateChange: newState = " + newState);
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    broadcastConnected();
+                    if (device != null) {
+                        broadcastConnected(device);
+                    }
+                    else {
+                        broadcastConnected();
+                    }
                     gatt.discoverServices();
                 } else {
                     broadcastDisconnected();

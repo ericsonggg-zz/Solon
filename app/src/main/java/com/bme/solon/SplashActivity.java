@@ -280,8 +280,8 @@ public class SplashActivity extends AppCompatActivity {
 
     private void addDevices() {
         db.addActiveDevice(new Device("Feridun", "00:11:22:33:FF:ED"));
-        db.addActiveDevice(new Device("Steve Rogers", "00:11:22:33:FF:EE"));
-        db.addActiveDevice(new Device("Ken Kaniff", "00:11:22:33:FF:EF"));
+        db.addActiveDevice(new Device("Mr. Goose", "00:11:22:33:FF:EE"));
+        db.addActiveDevice(new Device("Pearl", "00:11:22:33:FF:EF"));
     }
 
     private void addInstances() {
