@@ -1,43 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg">
+
+
+    <ImageButton
+        android:id="@+id/connect_pair_list_face"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@color/backgroundLight"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_baseline_face_35" />
 
     <TextView
         android:id="@+id/connect_pair_list_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textStyle="bold"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:fontFamily="sans-serif-condensed-medium"
+        android:text="Jenn's Device"
+        android:textAlignment="viewStart"
+        android:textSize="16dp"
         app:layout_constraintBottom_toTopOf="@+id/connect_pair_list_address"
-        app:layout_constraintEnd_toStartOf="@+id/connect_pair_list_rename"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/connect_pair_list_face"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/connect_pair_list_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/connect_pair_list_connect"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="10dp"
+        android:fontFamily="sans-serif-condensed-light"
+        android:text="Hello"
+        app:layout_constraintStart_toEndOf="@+id/connect_pair_list_face"
         app:layout_constraintTop_toBottomOf="@+id/connect_pair_list_name" />
 
     <ImageButton
         android:id="@+id/connect_pair_list_connect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="45dp"
+        android:layout_height="35dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="15dp"
+        android:background="@drawable/image_border"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/connect_pair_list_rename"
+        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_connecting" />
 
     <ImageButton
         android:id="@+id/connect_pair_list_rename"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/connect_pair_list_connect"
+
+        android:layout_width="45dp"
+        android:layout_height="35dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="65dp"
+        android:layout_marginBottom="15dp"
+        android:background="@drawable/image_border"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_edit_text" />
+
+    <!--<View-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="1dp"-->
+        <!--android:layout_marginStart="12dp"-->
+        <!--android:layout_marginTop="15dp"-->
+        <!--android:layout_marginEnd="12dp"-->
+        <!--android:background="@color/lightGrey"-->
+        <!--app:layout_constraintEnd_toEndOf="parent"-->
+        <!--app:layout_constraintStart_toStartOf="parent"-->
+        <!--app:layout_constraintTop_toBottomOf="@+id/connect_pair_list_rename" />-->
 </android.support.constraint.ConstraintLayout>
