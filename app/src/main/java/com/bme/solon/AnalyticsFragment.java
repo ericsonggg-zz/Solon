@@ -175,8 +175,8 @@ public class AnalyticsFragment extends MainFragment {
         Log.v(TAG, "updateResponseTime: posting task");
 
         AsyncTask<List<Instance>, Void, Void> task = new AsyncTask<List<Instance>, Void, Void>() {
-           int totalTime = 0;
-           int count = 0;
+            int totalTime = 0;
+            int count = 0;
 
             @Override
             protected Void doInBackground(List<Instance>... lists) {
@@ -351,7 +351,9 @@ public class AnalyticsFragment extends MainFragment {
         //Mark today
         Calendar todayCal = GregorianCalendar.getInstance();
         DateData today = new DateData(todayCal.get(Calendar.YEAR), todayCal.get(Calendar.MONTH)+1, todayCal.get(Calendar.DAY_OF_MONTH));
-        //calendarView.markDate(today.setMarkStyle(MarkStyle.DOT, Color.rgb(255, 255, 255)));
+        //calendarView.markDate(today.setMarkStyle(MarkStyle.BACKGROUND, Color.BLUE));
+
+        //Mark all instances
         calendarView.markDate(today.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(52, 52, 52)));
 
         //Mark all instances
@@ -386,16 +388,16 @@ public class AnalyticsFragment extends MainFragment {
         DateData data = new DateData(instanceDate.get(Calendar.YEAR), instanceDate.get(Calendar.MONTH), instanceDate.get(Calendar.DAY_OF_MONTH));
 
         if (instance.getSeverity() == StripStatus.NO_UTI.getSeverity()) {
-            data.setMarkStyle(MarkStyle.DOT, Color.rgb(0, 211, 186));
+            data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(125, 132, 131));
         }
         else if (instance.getSeverity() == StripStatus.LIGHT_UTI.getSeverity()) {
-            data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(71, 71, 71));
+            data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(71, 132, 125));
         }
         else if (instance.getSeverity() == StripStatus.MEDIUM_UTI.getSeverity()) {
-            data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(124, 124, 124));
+            data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(43, 132, 122));
         }
         else {
-            data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(170, 170, 170));
+            data.setMarkStyle(MarkStyle.BACKGROUND, Color.rgb(0, 211, 186));
         }
         calendarView.markDate(data);
     }

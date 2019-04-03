@@ -28,6 +28,7 @@
         android:layout_marginTop="10dp"
         android:fontFamily="sans-serif-condensed-medium"
         android:text="Jenn's Device"
+        android:textColor="@color/white"
         android:textAlignment="viewStart"
         android:textSize="16dp"
         app:layout_constraintBottom_toTopOf="@+id/connect_pair_list_address"
@@ -40,6 +41,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:fontFamily="sans-serif-condensed-light"
+        android:textColor="@color/white"
         android:text="Hello"
         app:layout_constraintStart_toEndOf="@+id/connect_pair_list_face"
         app:layout_constraintTop_toBottomOf="@+id/connect_pair_list_name" />
