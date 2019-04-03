@@ -28,6 +28,7 @@
         android:fontFamily="sans-serif-condensed-light"
         android:text="@string/status_disconnected"
         android:textSize="10dp"
+        android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/home_active_device" />
@@ -40,6 +41,7 @@
         android:layout_marginTop="10dp"
         android:fontFamily="sans-serif-condensed-light"
         android:text="@string/home_instance_prior_incidents"
+        android:textColor="@color/white"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/home_active_status" />
 
