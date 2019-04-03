@@ -279,17 +279,17 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void addDevices() {
-        db.addActiveDevice(new Device("TEST1", "00:11:22:33:FF:ED"));
-        db.addActiveDevice(new Device("TEST2", "00:11:22:33:FF:EE"));
-        db.addActiveDevice(new Device("TEST3", "00:11:22:33:FF:EF"));
+        db.addActiveDevice(new Device("Feridun", "00:11:22:33:FF:ED"));
+        db.addActiveDevice(new Device("Mr. Goose", "00:11:22:33:FF:EE"));
+        db.addActiveDevice(new Device("Pearl", "00:11:22:33:FF:EF"));
     }
 
     private void addInstances() {
         db.addInstance(new Instance(-1, "2019 02 26 04:02:22 AM", 2, 1, "2019 02 26 04:26:11 AM",2));
-        db.addInstance(new Instance(-1, "2019 02 28 05:09:00 AM", 3, 1, "2019 02 28 05:39:49 AM",2));
+        db.addInstance(new Instance(-1, "2019 02 28 05:09:00 AM", 3, 1, "2019 02 28 05:39:49 AM",4));
         db.addInstance(new Instance(-1, "2019 03 04 03:38:41 AM", 1, 1, "2019 03 04 03:42:09 AM",1));
-        db.addInstance(new Instance(-1, "2019 03 13 03:13:47 AM", 1, 1, "2019 03 13 03:40:28 AM",1));
-        db.addInstance(new Instance(-1, "2019 03 23 02:47:53 AM", 4, 1, "2019 03 23 02:58:36 AM",1));
+        db.addInstance(new Instance(-1, "2019 03 13 03:13:47 AM", 1, 1, "2019 03 13 03:40:28 AM",3));
+        db.addInstance(new Instance(-1, "2019 03 23 02:47:53 AM", 4, 1, "2019 03 23 02:58:36 AM",3));
         db.addInstance(new Instance(-1, "2019 03 25 11:50:02 PM", 1, 1, "2019 03 26 12:05:12 AM",1));
         db.addInstance(new Instance(-1, "2019 03 29 06:10:31 AM", 3, 1, "2019 03 29 08:00:50 AM",2));
         db.addInstance(new Instance(-1, "2019 04 01 03:44:12 AM", 3, 1, "2019 04 01 03:57:30 AM",1));

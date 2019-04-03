@@ -5,18 +5,22 @@ import android.util.Log;
 public class StripReader {
     public static final String TAG = "StripReader";
 
-    public static final int WET_RED = 9000;
-    public static final int WET_GREEN = 9000;
-    public static final int WET_BLUE = 9000;
-    public static final int LOW_SEVERITY_RED = 9000;
-    public static final int LOW_SEVERITY_GREEN = 9000;
-    public static final int LOW_SEVERITY_BLUE = 9000;
+    public static final int THRESHOLD = 1000;
+    public static final int DRY_RED = 35500;
+    public static final int DRY_GREEN = 29000;
+    public static final int DRY_BLUE = 15500;
+    public static final int WET_RED = 10000;
+    public static final int WET_GREEN = 10500;
+    public static final int WET_BLUE = 6500;
+    public static final int LOW_SEVERITY_RED = 8500;
+    public static final int LOW_SEVERITY_GREEN = 10750;
+    public static final int LOW_SEVERITY_BLUE = 8750;
     public static final int MED_SEVERITY_RED = 9000;
     public static final int MED_SEVERITY_GREEN = 9000;
     public static final int MED_SEVERITY_BLUE = 9000;
-    public static final int HIGH_SEVERITY_RED = 28500;
-    public static final int HIGH_SEVERITY_GREEN = 23500;
-    public static final int HIGH_SEVERITY_BLUE = 19500;
+    public static final int HIGH_SEVERITY_RED = 15500;
+    public static final int HIGH_SEVERITY_GREEN = 20000;
+    public static final int HIGH_SEVERITY_BLUE = 16500;
 
     public static final int STATUS_RESET_THRESHOLD = 30;
 
@@ -31,25 +35,30 @@ public class StripReader {
         int green = Integer.valueOf(rgb[1].replaceAll("[^\\d.]", ""));
         int blue = Integer.valueOf(rgb[2].replaceAll("[^\\d.]", ""));
 
-        if (red < WET_RED && green < WET_GREEN && blue < WET_BLUE) {
+        if (withinThreshold(red, DRY_RED) && withinThreshold(green, DRY_GREEN) && withinThreshold(blue, DRY_BLUE)) {
             Log.v(TAG, "Strip is dry");
             return StripStatus.DRY;
         }
-        else if (red < LOW_SEVERITY_RED && green < LOW_SEVERITY_GREEN && blue < LOW_SEVERITY_BLUE) {
+        if (withinThreshold(red, WET_RED) && withinThreshold(green, WET_GREEN) && withinThreshold(blue, WET_BLUE)) {
             Log.v(TAG, "Strip is wet, no UTI");
             return StripStatus.NO_UTI;
         }
-        else if (red < MED_SEVERITY_RED && green < MED_SEVERITY_GREEN && blue < MED_SEVERITY_BLUE) {
+        if (withinThreshold(red, LOW_SEVERITY_RED) && withinThreshold(green, LOW_SEVERITY_GREEN) && withinThreshold(blue, LOW_SEVERITY_BLUE)) {
             Log.v(TAG, "Strip has light UTI");
-            return StripStatus.LIGHT_UTI;
+            return StripStatus.MEDIUM_UTI;
         }
-        else if (red < HIGH_SEVERITY_RED && green < HIGH_SEVERITY_GREEN && blue < HIGH_SEVERITY_BLUE) {
+        if (withinThreshold(red, MED_SEVERITY_RED) && withinThreshold(green, MED_SEVERITY_GREEN) && withinThreshold(blue, MED_SEVERITY_BLUE)) {
             Log.v(TAG, "Strip has medium UTI");
             return StripStatus.MEDIUM_UTI;
         }
-        else {
+        if (withinThreshold(red, HIGH_SEVERITY_RED) && withinThreshold(green, HIGH_SEVERITY_GREEN) && withinThreshold(blue, HIGH_SEVERITY_BLUE)) {
             Log.v(TAG, "Strip has severe UTI");
             return StripStatus.SEVERE_UTI;
         }
+        return StripStatus.DRY;
+    }
+
+    public static boolean withinThreshold(int value, int median) {
+        return value > (median - THRESHOLD) && value < (median + THRESHOLD);
     }
 }

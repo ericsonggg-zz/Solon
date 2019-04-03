@@ -159,6 +159,7 @@ public class ConnectFragment extends MainFragment {
                 activeStatusView.setText(getText(R.string.status_connecting));
                 break;
             case BluetoothBroadcast.ACTION_CONNECTED:
+                activeNameView.setText(intent.getStringExtra(BluetoothBroadcast.KEY_DEVICE_NAME));
             case BluetoothBroadcast.ACTION_CONNECTED_UPDATE:
                 activeStatusView.setText(getText(R.string.status_connected));
                 break;
@@ -204,6 +205,9 @@ public class ConnectFragment extends MainFragment {
                 if (id != -1 && activeDevice != null && activeDevice.getId() == id) {
                     activeNameView.setText(activeDevice.getAppName());
                 }
+                Device updatedDevice = db.getDevice(id);
+                pairAdapter.updateDevice(updatedDevice);
+                pairAdapter.notifyDataSetChanged();
                 break;
         }
     }

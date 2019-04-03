@@ -83,13 +83,16 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
                 if (instance.getResolution() == Instance.RESOLVED) {
                     instanceResolution.setText(R.string.home_instance_resolved);
                     instanceResolution.setTextColor(Color.rgb(103, 103, 103));
+                    instanceUTI.setColorFilter(Color.rgb(103,103,103));
                     Context context = instanceResolutionTime.getContext();
                     instanceResolutionTime.setText(String.format(context.getString(R.string.home_instance_resolution_time), Instance.TIME_FORMAT.format(instance.getResolutionTime())));
                 }
                 else {
                     instanceResolution.setText(R.string.home_instance_unresolved);
                     instanceResolution.setTextColor(themeTextColor);
+                    instanceUTI.setColorFilter(null);
                     instanceResolutionTime.setText(R.string.home_instance_default_resolution_time);
+
                 }
                 if (instance.getSeverity() == StripStatus.NO_UTI.getSeverity()) { //hide image if no uti
                     instanceUTI.setVisibility(View.INVISIBLE);
